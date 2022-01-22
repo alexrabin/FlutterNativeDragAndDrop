@@ -2,6 +2,9 @@
 
 A package that allows you to add native drag and drop support into your flutter app.
 
+https://user-images.githubusercontent.com/15949910/150646060-f0bd9681-5a6e-4152-a336-0faf94381d9b.mp4
+
+
 ## Currently supported features
 * iOS support only (iOS 11 and above)
 * Only has drop support (can drag data from outside of the app and drop into your flutter application)
