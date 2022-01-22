@@ -1,3 +1,7 @@
+## 0.0.1+1
+
+* Added example gif
+
 ## 0.0.1
 
 * Suppoert iOS 11 and above

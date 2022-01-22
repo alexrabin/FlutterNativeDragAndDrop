@@ -1,6 +1,6 @@
 name: native_drag_n_drop
 description: A package that allows you to add native drag and drop support into your flutter app.
-version: 0.0.1
+version: 0.0.1+1
 homepage: https://github.com/alexrabin/FlutterNativeDragAndDrop
 
 environment:
