@@ -1,30 +1,34 @@
 import 'dart:io';
 
 import 'package:flutter/services.dart';
+import 'package:native_drag_n_drop/src/drop_data.dart';
 
+///triggered when the data is dropped into the dropview
 typedef DropViewLoadingCallback = void Function(bool loading);
+
+///triggered when the drop data has been received
 typedef DropViewDataReceivedCallback = void Function(
     List<DropData> receivedData);
 
 class DropViewController {
   late MethodChannel _channel;
-  final DropViewLoadingCallback loadingCallback;
-  final DropViewDataReceivedCallback dataReceivedCallback;
-  DropViewController(int id, this.loadingCallback, this.dataReceivedCallback) {
+  final DropViewLoadingCallback loading;
+  final DropViewDataReceivedCallback dataReceived;
+  DropViewController(int id, this.loading, this.dataReceived) {
     _channel = MethodChannel('DropView/$id');
     _channel.setMethodCallHandler(_receivedData);
   }
   Future<void> _receivedData(MethodCall call) async {
     switch (call.method) {
       case 'loadingData':
-        loadingCallback(true);
+        loading(true);
         break;
       case 'receivedDropData':
         List<dynamic> data = call.arguments as List<dynamic>;
         List<Map<String, dynamic>> receivedData =
             data.map((e) => Map<String, dynamic>.from(e)).toList();
 
-        dataReceivedCallback(_processData(receivedData));
+        dataReceived(_processData(receivedData));
         break;
     }
   }
@@ -64,16 +68,7 @@ class DropViewController {
         dropDataList.add(dropData);
       }
     }
-    loadingCallback(false);
+    loading(false);
     return dropDataList;
   }
-}
-
-enum DropDataType { text, url, image, video, audio, pdf }
-
-class DropData {
-  File? dropFile;
-  String? dropText;
-  DropDataType type;
-  DropData({this.dropFile, this.dropText, required this.type});
 }

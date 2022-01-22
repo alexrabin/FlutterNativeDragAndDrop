@@ -6,7 +6,7 @@ A package that allows you to add native drag and drop support into your flutter 
 
 
 ## Currently supported features
-* iOS support only (iOS 11 and above)
+* Support iPadOS 11 and iOS 15 and above
 * Only has drop support (can drag data from outside of the app and drop into your flutter application)
 * Supports text, urls, images, videos, audio, and pdfs
 * Can drop multiple items at once
@@ -21,6 +21,7 @@ List<DropData> receivedData = [];
 @override
 Widget build(BuildContext context) {
     return NativeDropView(
+    allowedTotal: 5,
     child: receivedData.isNotEmpty
         ? ListView.builder(
             itemCount: receivedData.length,
@@ -69,8 +70,8 @@ As for image, video, audio, pdf it is safe to assume the dropFile will be non nu
 
 ## Todo
 
+- [x] specify the number of items allowed to be dropped at a time
 - [ ] Only allow certain data types
-- [ ] specify the number of items allowed to be dropped at a time
 - [ ] Android Support
 - [ ] Drag support (Dragging data within app to a source outside of flutter app)
 

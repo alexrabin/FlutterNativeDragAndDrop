@@ -45,7 +45,7 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
     let viewId: Int64
     let messenger: FlutterBinaryMessenger
     let channel: FlutterMethodChannel
-    
+    private var _allowedTotal : Int = -1
     init(
         frame: CGRect,
         viewIdentifier viewId: Int64,
@@ -64,6 +64,9 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
         // iOS views can be created here
         _view.backgroundColor = UIColor.clear
         if let flutterArgs = args as? [String: Any] {
+            if let allowedTotal = flutterArgs["allowedTotal"] as? Int{
+                self._allowedTotal = allowedTotal
+            }
           if let width = flutterArgs["width"] as? Double, let height = flutterArgs["height"] as? Double{
               self._view.frame.size = CGSize(width: width, height: height)
           }
@@ -105,6 +108,9 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
         channel.invokeMethod("loadingData", arguments: "Loading your data")
     }
     public func dropInteraction(_ interaction: UIDropInteraction, canHandle session: UIDropSession) -> Bool {
+        if self._allowedTotal != -1 && session.items.count > self._allowedTotal{
+            return false
+        }
         return session.hasItemsConforming(toTypeIdentifiers: [kUTTypeImage as String, kUTTypeMovie as String, kUTTypeAudio as String, kUTTypePlainText as String, kUTTypePDF as String, kUTTypeURL as String])
     }
     public func dropInteraction(_ interaction: UIDropInteraction, sessionDidUpdate session: UIDropSession) -> UIDropProposal {
