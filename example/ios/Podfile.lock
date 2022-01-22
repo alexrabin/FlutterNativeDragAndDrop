@@ -1,0 +1,22 @@
+PODS:
+  - Flutter (1.0.0)
+  - native_drag_n_drop (0.0.1):
+    - Flutter
+
+DEPENDENCIES:
+  - Flutter (from `Flutter`)
+  - native_drag_n_drop (from `.symlinks/plugins/native_drag_n_drop/ios`)
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Flutter
+  native_drag_n_drop:
+    :path: ".symlinks/plugins/native_drag_n_drop/ios"
+
+SPEC CHECKSUMS:
+  Flutter: 50d75fe2f02b26cc09d224853bb45737f8b3214a
+  native_drag_n_drop: 74bb9448ebf4a6a8a6486394e5d8d90a3d8d71bb
+
+PODFILE CHECKSUM: aafe91acc616949ddb318b77800a7f51bffa2a4c
+
+COCOAPODS: 1.11.2
