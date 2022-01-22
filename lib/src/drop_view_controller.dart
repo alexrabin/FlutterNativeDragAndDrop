@@ -39,7 +39,11 @@ class DropViewController {
       if (d['text'] != null) {
         //add text
         var text = d['text'] as String;
-        var dropData = DropData(type: DropDataType.text, dropText: text);
+        var fileType = d['fileType'] as String?;
+        var dropData = DropData(
+            type: DropDataType.text,
+            dropText: text,
+            metadata: fileType != null ? {'fileType': fileType} : {});
         dropDataList.add(dropData);
       } else if (d['url'] != null) {
         //add url
