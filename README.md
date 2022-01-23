@@ -2,13 +2,13 @@
 
 A package that allows you to add native drag and drop support into your flutter app.
 
-![dragndropexample](https://user-images.githubusercontent.com/15949910/150646463-8c3c6c87-8d41-4a26-a824-ac1455524fee.gif)
+![dragndropex2](https://user-images.githubusercontent.com/15949910/150670673-c19d7d65-f9b0-4a3f-8e2a-aae8b241e28d.gif)
 
 
 ## Currently supported features
 * Support iPadOS 11 and iOS 15 and above
 * Only has drop support (can drag data from outside of the app and drop into your flutter application)
-* Supports text, urls, images, videos, audio, and pdfs
+* Supports text, urls, images, videos, audio, pdfs, and custom file extensions
 * Can drop multiple items at once
 
 ## Usage
@@ -72,13 +72,11 @@ As for image, video, audio, pdf it is safe to assume the dropFile will be non nu
 ## Todo
 
 - [x] specify the number of items allowed to be dropped at a time
-- [ ] Only allow certain data types
+- [x] Only allow certain data types
 - [ ] Android Support
 - [ ] Drag support (Dragging data within app to a source outside of flutter app)
 
 ## Contributing
-
-This is a very early release. I will take as much help as possible.
 
 Please make a pr and show an example if possible.
 
