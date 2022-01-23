@@ -1,3 +1,10 @@
+## 0.0.2
+* Can select certain data types
+* Can add custom extensions
+* Can update the allowed count, allowed data types, and allowed extensions once NativeDropView is created
+* Updated example
+
+Thank you [@getBoolean](https://github.com/getBoolean) for helping with these features!
 ## 0.0.1+4
 * Removed width and height arguments ( Wrap drop view with a container instead)
 * Updated read me
