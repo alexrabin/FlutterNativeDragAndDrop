@@ -16,6 +16,7 @@
 </p>
 
 A package that allows you to add native drag and drop support into your flutter app.
+![iPadDropExample](https://user-images.githubusercontent.com/15949910/150702838-817e24cd-9494-43e3-a077-64a036393b0a.gif)
 
 ![dragndropex2](https://user-images.githubusercontent.com/15949910/150670673-c19d7d65-f9b0-4a3f-8e2a-aae8b241e28d.gif)
 
