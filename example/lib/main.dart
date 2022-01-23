@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:native_drag_n_drop/native_drag_n_drop.dart';
 
@@ -31,27 +33,58 @@ class _MyAppState extends State<MyApp> {
           child: Center(
             child: Stack(
               children: [
-                ListView(
-                  children: [
-                    SizedBox(
-                      height: 300,
-                      child: allowOneFileAtATime(),
-                    ),
-                    SizedBox(
-                      height: 300,
-                      child: allow5FilesAtATime(),
-                    ),
-                    SizedBox(
-                      height: 300,
-                      child: noFileLimit(),
-                    ),
-                  ],
-                ),
-                loadingData
-                    ? const Center(
-                        child: CircularProgressIndicator(),
-                      )
-                    : Container()
+                Expanded(
+                  child: Stack(
+                    children: [
+                      NativeDropView(
+                          allowedDropDataTypes: const <DropDataType>[
+                            DropDataType.image,
+                          ],
+                          allowedDropFileExtensions: const <String>[
+                            'epub',
+                            'apk',
+                          ],
+                          child: receivedData.isNotEmpty
+                              ? ListView.builder(
+                                  itemCount: receivedData.length,
+                                  itemBuilder: (context, index) {
+                                    var data = receivedData[index];
+                                    if (data.type == DropDataType.text) {
+                                      return ListTile(
+                                        title: Text(data.dropText!),
+                                      );
+                                    }
+                                    if (data.type == DropDataType.image) {
+                                      return DroppedImageListTile(
+                                        dropData: data,
+                                      );
+                                    }
+
+                                    return ListTile(
+                                      title: Text(data.dropFile!.path),
+                                    );
+                                  })
+                              : const Center(
+                                  child: Text("Drop data here"),
+                                ),
+                          loading: (loading) {
+                            setState(() {
+                              loadingData = loading;
+                            });
+                          },
+                          dataReceived: (data) {
+                            setState(() {
+                              receivedData.addAll(data);
+                            });
+                          }),
+                      loadingData
+                          ? const Center(
+                              child: CircularProgressIndicator(),
+                            )
+                          : Container()
+                    ],
+                  ),
+                )
               ],
             ),
           ),
@@ -60,88 +93,46 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-  Widget listView(List<DropData> dataList) {
-    return ListView.builder(
-        shrinkWrap: true,
-        itemCount: dataList.length,
-        itemBuilder: (context, index) {
-          var data = dataList[index];
-          if (data.type == DropDataType.text) {
-            return ListTile(
-              title: Text(data.dropText!),
-            );
-          }
-          if (data.type == DropDataType.image) {
-            return SizedBox(height: 100, child: Image.file(data.dropFile!));
-          }
+}
+
+class DroppedImageListTile extends StatelessWidget {
+  const DroppedImageListTile({Key? key, required this.dropData})
+      : super(key: key);
+
+  final DropData dropData;
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<Uint8List>(
+      future: dropData.dropFile?.readAsBytes(),
+      builder: (
+        BuildContext context,
+        AsyncSnapshot snapshot,
+      ) {
+        if (snapshot.hasError) {
           return ListTile(
-            title: Text(data.dropFile!.path),
+            title: Text(snapshot.error!.toString()),
           );
-        });
-  }
+        }
 
-  Widget allowOneFileAtATime() {
-    return NativeDropView(
-        allowedTotal: 1,
-        borderColor: Colors.blue,
-        borderWidth: 2,
-        child: receivedData[0].isNotEmpty
-            ? listView(receivedData[0])
-            : const Center(
-                child: Text("Drop one item here"),
-              ),
-        loading: (loading) {
-          setState(() {
-            loadingData = loading;
-          });
-        },
-        dataReceived: (data) {
-          setState(() {
-            receivedData[0].addAll(data);
-          });
-        });
-  }
+        if (snapshot.connectionState == ConnectionState.done) {
+          return ListTile(
+            leading: CircleAvatar(
+              backgroundColor: Colors.white,
+              backgroundImage: MemoryImage(snapshot.data!),
+            ),
+            title: Text(dropData.dropFile?.path ?? 'Path unknown'),
+          );
+        }
 
-  Widget allow5FilesAtATime() {
-    return NativeDropView(
-        allowedTotal: 5,
-        borderColor: Colors.blue,
-        borderWidth: 2,
-        child: receivedData[1].isNotEmpty
-            ? listView(receivedData[1])
-            : const Center(
-                child: Text("Drop up to 5 items here"),
-              ),
-        loading: (loading) {
-          setState(() {
-            loadingData = loading;
-          });
-        },
-        dataReceived: (data) {
-          setState(() {
-            receivedData[1].addAll(data);
-          });
-        });
-  }
-
-  Widget noFileLimit() {
-    return NativeDropView(
-        borderColor: Colors.blue,
-        borderWidth: 2,
-        child: receivedData[2].isNotEmpty
-            ? listView(receivedData[2])
-            : const Center(
-                child: Text("Drop data here"),
-              ),
-        loading: (loading) {
-          setState(() {
-            loadingData = loading;
-          });
-        },
-        dataReceived: (data) {
-          setState(() {
-            receivedData[2].addAll(data);
-          });
-        });
+        return ListTile(
+          leading: const CircleAvatar(
+            backgroundColor: Colors.white,
+            child: CircularProgressIndicator(),
+          ),
+          title: Text(dropData.dropFile?.path ?? 'Path unknown'),
+        );
+      },
+    );
   }
 }
