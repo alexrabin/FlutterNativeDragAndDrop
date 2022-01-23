@@ -45,8 +45,8 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
     let viewId: Int64
     let messenger: FlutterBinaryMessenger
     let channel: FlutterMethodChannel
-    var allowedDropDataTypes: [String]?
-    var allowedDropFileExtensions: [String]?
+    var _allowedDropDataTypes: [String]?
+    var _allowedDropFileExtensions: [String]?
     
     init(
         frame: CGRect,
@@ -89,10 +89,10 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
             }    
           }
           if let dropDataTypes = flutterArgs["allowedDropDataTypes"] as? [String] {
-              self.allowedDropDataTypes = dropDataTypes
+              self._allowedDropDataTypes = dropDataTypes
           }
           if let dropFileExtensions = flutterArgs["allowedDropFileExtensions"] as? [String] {
-              self.allowedDropFileExtensions = dropFileExtensions
+              self._allowedDropFileExtensions = dropFileExtensions
           }
         }
         let dropInteraction = UIDropInteraction(delegate: self)
@@ -114,11 +114,11 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
     public func dropInteraction(_ interaction: UIDropInteraction, canHandle session: UIDropSession) -> Bool {
         // If no data types are specified, allow all types
         var allowedTypeIdentifiers: [String] = []
-        if allowedDropDataTypes == nil {
+        if _allowedDropDataTypes == nil {
             allowedTypeIdentifiers.append(contentsOf: [kUTTypeImage as String, kUTTypeMovie as String, kUTTypeAudio as String, kUTTypePlainText as String, kUTTypePDF as String, kUTTypeURL as String, kUTTypeData as String])
         }
         else {
-            for dropType in allowedDropDataTypes! {
+            for dropType in _allowedDropDataTypes! {
                 if dropType == "text" {
                     allowedTypeIdentifiers.append(kUTTypePlainText as String)
                 }
@@ -145,7 +145,7 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
 
         
 
-        if allowedDropFileExtensions == nil {
+        if _allowedDropFileExtensions == nil {
             return session.hasItemsConforming(toTypeIdentifiers: allowedTypeIdentifiers)
         }
 
@@ -171,7 +171,7 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
             droppedFileExtensionList.append(extensionName!.lowercased())
         }
 
-        let hasItemsWithAllowedExtensions: Bool = Set(droppedFileExtensionList).intersection(Set(allowedDropFileExtensions!)).count > 0
+        let hasItemsWithAllowedExtensions: Bool = Set(droppedFileExtensionList).intersection(Set(_allowedDropFileExtensions!)).count > 0
         
         // Converting extensions to UTI to check if the dropped files match does not work because not all filetypes have a UTI
 //        // Convert the file extension to Uniform Type Identifier to
