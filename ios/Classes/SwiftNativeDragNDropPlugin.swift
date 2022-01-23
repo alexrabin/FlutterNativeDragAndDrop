@@ -47,7 +47,7 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
     let channel: FlutterMethodChannel
     var _allowedDropDataTypes: [String]?
     var _allowedDropFileExtensions: [String]?
-    
+    private var _allowedTotal : Int = -1
     init(
         frame: CGRect,
         viewIdentifier viewId: Int64,
@@ -66,9 +66,9 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
         // iOS views can be created here
         _view.backgroundColor = UIColor.clear
         if let flutterArgs = args as? [String: Any] {
-          if let width = flutterArgs["width"] as? Double, let height = flutterArgs["height"] as? Double{
-              self._view.frame.size = CGSize(width: width, height: height)
-          }
+            if let allowedTotal = flutterArgs["allowedTotal"] as? Int{
+                self._allowedTotal = allowedTotal
+            }
           if let backgroundColor = flutterArgs["backgroundColor"] as? [Int]{
             if backgroundColor.count > 0{
               let colorValues = backgroundColor.map {
@@ -112,7 +112,11 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
         channel.invokeMethod("loadingData", arguments: "Loading your data")
     }
     public func dropInteraction(_ interaction: UIDropInteraction, canHandle session: UIDropSession) -> Bool {
-        // If no data types are specified, allow all types
+        
+        // If items count is greater than allowed count then can handle returns false
+        if self._allowedTotal != -1 && session.items.count > self._allowedTotal{
+            return false
+        }        // If no data types are specified, allow all types
         var allowedTypeIdentifiers: [String] = []
         if _allowedDropDataTypes == nil {
             allowedTypeIdentifiers.append(contentsOf: [kUTTypeImage as String, kUTTypeMovie as String, kUTTypeAudio as String, kUTTypePlainText as String, kUTTypePDF as String, kUTTypeURL as String, kUTTypeData as String])
@@ -191,7 +195,6 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
         let hasItemsConformingToTypeIdentifiers: Bool = session.hasItemsConforming(toTypeIdentifiers: allowedTypeIdentifiers)
 
         return hasItemsWithAllowedExtensions || hasItemsConformingToTypeIdentifiers
-        
     }
 
     public func dropInteraction(_ interaction: UIDropInteraction, sessionDidUpdate session: UIDropSession) -> UIDropProposal {

@@ -16,7 +16,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   bool loadingData = false;
-  List<DropData> receivedData = [];
+  List<List<DropData>> receivedData = [[], [], []];
   @override
   void initState() {
     super.initState();
@@ -31,7 +31,7 @@ class _MyAppState extends State<MyApp> {
         ),
         body: SafeArea(
           child: Center(
-            child: Column(
+            child: Stack(
               children: [
                 Expanded(
                   child: Stack(
@@ -67,12 +67,12 @@ class _MyAppState extends State<MyApp> {
                               : const Center(
                                   child: Text("Drop data here"),
                                 ),
-                          loadingCallback: (loading) {
+                          loading: (loading) {
                             setState(() {
                               loadingData = loading;
                             });
                           },
-                          dataReceivedCallback: (data) {
+                          dataReceived: (data) {
                             setState(() {
                               receivedData.addAll(data);
                             });
@@ -92,6 +92,7 @@ class _MyAppState extends State<MyApp> {
       ),
     );
   }
+
 }
 
 class DroppedImageListTile extends StatelessWidget {

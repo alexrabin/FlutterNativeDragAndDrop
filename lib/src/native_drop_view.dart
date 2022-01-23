@@ -3,18 +3,31 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:native_drag_n_drop/src/drop_view_controller.dart';
 
-typedef DropViewCreatedCallback = void Function(DropViewController controller);
-
 class NativeDropView extends StatefulWidget {
   static const StandardMessageCodec _decoder = StandardMessageCodec();
+
+  ///the child container in the dropview
   final Widget child;
-  final double? width;
-  final double? height;
+
+  ///background color of the dropview
   final Color? backgroundColor;
+
+  /// border color of the dropview
   final Color? borderColor;
+
+  ///border width of the dropview
   final int? borderWidth;
-  final DropViewLoadingCallback loadingCallback;
-  final DropViewDataReceivedCallback dataReceivedCallback;
+
+  ///triggered when the data is dropped into the dropview
+  final DropViewLoadingCallback loading;
+
+  ///triggered when the data has been received
+  final DropViewDataReceivedCallback dataReceived;
+
+  /// number of items allowed to be dropped at a time
+  ///
+  /// When [allowedTotal] is null there is no limit
+  final int? allowedTotal;
 
   /// Restrict the types of data that can be dropped. All [DropDataType] will be accepted if this is null
   final List<DropDataType>? allowedDropDataTypes;
@@ -27,16 +40,17 @@ class NativeDropView extends StatefulWidget {
   const NativeDropView({
     Key? key,
     required this.child,
-    this.width,
-    this.height,
     this.backgroundColor,
     this.borderColor,
     this.borderWidth,
     this.allowedDropDataTypes,
     this.allowedDropFileExtensions,
-    required this.loadingCallback,
-    required this.dataReceivedCallback,
-  }) : super(key: key);
+    required this.loading,
+    required this.dataReceived,
+    this.allowedTotal})
+    : assert((borderColor == null && borderWidth == null) ||
+            (borderColor != null && borderWidth != null)),
+     super(key: key);
 
   @override
   State<NativeDropView> createState() => _NativeDropViewState();
@@ -56,20 +70,21 @@ class _NativeDropViewState extends State<NativeDropView> {
               viewType: 'DropPlatformView',
               onPlatformViewCreated: _onPlatformViewCreated,
               creationParams: {
-                "width": widget.width ?? MediaQuery.of(context).size.width,
-                "height": widget.height ?? MediaQuery.of(context).size.height,
+                "allowedTotal": widget.allowedTotal,
                 "backgroundColor": widget.backgroundColor != null
                     ? [
                         widget.backgroundColor!.red,
                         widget.backgroundColor!.green,
-                        widget.backgroundColor!.blue
+                        widget.backgroundColor!.blue,
+                        widget.backgroundColor!.alpha
                       ]
                     : [],
                 "borderColor": widget.borderColor != null
                     ? [
                         widget.borderColor!.red,
                         widget.borderColor!.green,
-                        widget.borderColor!.blue
+                        widget.borderColor!.blue,
+                        widget.borderColor!.alpha
                       ]
                     : [],
                 "borderWidth": widget.borderWidth ?? 0,
@@ -92,7 +107,7 @@ class _NativeDropViewState extends State<NativeDropView> {
   }
 
   void _onPlatformViewCreated(int id) {
-    dropController = DropViewController(
-        id, widget.loadingCallback, widget.dataReceivedCallback);
+    dropController =
+        DropViewController(id, widget.loading, widget.dataReceived);
   }
 }
