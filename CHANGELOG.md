@@ -1,3 +1,7 @@
+## 0.0.3
+* Must set allowedDropDataTypes or allowedDropFileExtensions (at least one of these attributes must be defined)
+* Fixed an issue where some file types wouldn't register from an iCloud folder
+
 ## 0.0.2
 * Can select certain data types
 * Can add custom extensions

@@ -23,11 +23,11 @@ class _HomeViewState extends State<HomeView> {
   Map<DropDataType, bool> dataTypes = {
     DropDataType.text: true,
     DropDataType.image: true,
-    DropDataType.video: false,
-    DropDataType.url: false,
-    DropDataType.pdf: false,
-    DropDataType.audio: false,
-    DropDataType.file: false
+    DropDataType.video: true,
+    DropDataType.url: true,
+    DropDataType.pdf: true,
+    DropDataType.audio: true,
+    DropDataType.file: true
   };
 
   List<String> allowedFileExtensions = [];
@@ -45,84 +45,114 @@ class _HomeViewState extends State<HomeView> {
                 builder: (context) {
                   return StatefulBuilder(builder: (context, setState) {
                     _setState = setState;
-                    return ListView(
+                    return Column(
                       children: [
-                        const Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Center(
-                            child:
-                                Text('Allowed items to be dropped at a time:'),
+                        const SizedBox(
+                          height: 12.0,
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            Container(
+                              width: 30,
+                              height: 5,
+                              decoration: BoxDecoration(
+                                  color: Theme.of(context).brightness ==
+                                          Brightness.light
+                                      ? Colors.grey[300]
+                                      : Colors.grey[600],
+                                  borderRadius: const BorderRadius.all(
+                                      Radius.circular(12.0))),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(
+                          height: 18.0,
+                        ),
+                        SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.5,
+                          child: ListView(
+                            children: [
+                              const Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Center(
+                                  child: Text(
+                                      'Allowed items to be dropped at a time:'),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Center(
+                                  child: Text(allowedItemsAtOnce != 0
+                                      ? "${allowedItemsAtOnce.toInt()} items allowed"
+                                      : "No limit"),
+                                ),
+                              ),
+                              Slider(
+                                value: allowedItemsAtOnce,
+                                max: 20,
+                                divisions: 20,
+                                min: 0,
+                                label: allowedItemsAtOnce.round().toString(),
+                                onChanged: (value) {
+                                  _setState(() {
+                                    allowedItemsAtOnce = value;
+                                  });
+                                },
+                              ),
+                              const Divider(),
+                              const Center(child: Text('Allowed data types:')),
+                              ...dataTypes.keys.map((key) {
+                                return CheckboxListTile(
+                                    title: Text(key.toString()),
+                                    value: dataTypes[key],
+                                    onChanged: (bool? value) {
+                                      _setState(() {
+                                        dataTypes[key] = value!;
+                                      });
+                                    });
+                              }).toList(),
+                              const Divider(),
+                              const Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Center(
+                                    child: Text('Allowed file extensions:')),
+                              ),
+                              ElevatedButton(
+                                  onPressed: () {
+                                    _displayTextInputDialog(context);
+                                  },
+                                  child: const Text("Add extension")),
+                              ...allowedFileExtensions.mapIndexed((ext, index) {
+                                return ListTile(
+                                  title: Text(
+                                    ext,
+                                  ),
+                                  trailing: IconButton(
+                                    icon: const Icon(Icons.close),
+                                    onPressed: () {
+                                      _setState(() {
+                                        allowedFileExtensions.removeAt(index);
+                                      });
+                                    },
+                                  ),
+                                );
+                              }).toList(),
+                            ],
                           ),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Center(
-                            child: Text(allowedItemsAtOnce != 0
-                                ? "${allowedItemsAtOnce.toInt()} items allowed"
-                                : "No limit"),
-                          ),
-                        ),
-                        Slider(
-                          value: allowedItemsAtOnce,
-                          max: 20,
-                          divisions: 20,
-                          min: 0,
-                          label: allowedItemsAtOnce.round().toString(),
-                          onChanged: (value) {
-                            _setState(() {
-                              allowedItemsAtOnce = value;
-                            });
-                          },
-                        ),
-                        const Divider(),
-                        const Center(child: Text('Allowed data types:')),
-                        ...dataTypes.keys.map((key) {
-                          return CheckboxListTile(
-                              title: Text(key.toString()),
-                              value: dataTypes[key],
-                              onChanged: (bool? value) {
-                                _setState(() {
-                                  dataTypes[key] = value!;
-                                });
-                              });
-                        }).toList(),
-                        const Divider(),
-                        const Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child:
-                              Center(child: Text('Allowed file extensions:')),
-                        ),
-                        ElevatedButton(
-                            onPressed: () {
-                              _displayTextInputDialog(context);
-                            },
-                            child: const Text("Add extension")),
-                        ...allowedFileExtensions.mapIndexed((ext, index) {
-                          return ListTile(
-                            title: Text(
-                              ext,
-                            ),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.close),
-                              onPressed: () {
-                                _setState(() {
-                                  allowedFileExtensions.removeAt(index);
-                                });
-                              },
-                            ),
-                          );
-                        }).toList(),
                       ],
                     );
                   });
                 });
             if (_dropViewController != null) {
               _dropViewController!.refreshDropViewParams(
-                  allowedItemsAtOnce == 0 ? -1 : allowedItemsAtOnce.toInt(),
-                  dataTypes.keys
+                  allowedTotal:
+                      allowedItemsAtOnce == 0 ? -1 : allowedItemsAtOnce.toInt(),
+                  allowedDropDataTypes: dataTypes.keys
                       .where((element) => dataTypes[element] == true)
                       .toList(),
-                  allowedFileExtensions);
+                  allowedDropFileExtensions: allowedFileExtensions);
             }
           },
         ),
@@ -200,14 +230,14 @@ class _HomeViewState extends State<HomeView> {
 
 class ListNativeDropView extends StatefulWidget {
   final int allowedItemsAtOnce;
-  final List<DropDataType> allowedDataTypes;
-  final List<String> allowedFileExtensions;
+  final List<DropDataType>? allowedDataTypes;
+  final List<String>? allowedFileExtensions;
   final DropViewCreatedCallback created;
   const ListNativeDropView(
       {Key? key,
       required this.allowedItemsAtOnce,
-      required this.allowedDataTypes,
-      required this.allowedFileExtensions,
+      this.allowedDataTypes,
+      this.allowedFileExtensions,
       required this.created})
       : super(key: key);
 
@@ -242,9 +272,7 @@ class _ListNativeDropViewState extends State<ListNativeDropView> {
             SizedBox(
               height: MediaQuery.of(context).size.height * 0.8,
               child: NativeDropView(
-                  allowedTotal: widget.allowedItemsAtOnce == 0
-                      ? null
-                      : widget.allowedItemsAtOnce,
+                  allowedTotal: widget.allowedItemsAtOnce,
                   allowedDropDataTypes: widget.allowedDataTypes,
                   allowedDropFileExtensions: widget.allowedFileExtensions,
                   created: widget.created,

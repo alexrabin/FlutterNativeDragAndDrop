@@ -1,5 +1,20 @@
 # native_drag_n_drop
 
+<p align="center">
+ <a href="https://pub.dartlang.org/packages/native_drag_n_drop">
+    <img alt="native_drag_n_drop" src="https://img.shields.io/pub/v/native_drag_n_drop.svg">
+  </a>
+ <a href="https://www.paypal.com/donate/?hosted_button_id=6ZB3J8WR4CNV8">
+    <img alt="Donate" src="https://img.shields.io/badge/Donate-PayPal-blue.svg">
+  </a>
+ <a href="https://www.buymeacoffee.com/alexrabin">
+    <img alt="Buy me a coffee" src="https://img.shields.io/badge/Donate-Buy%20Me%20A%20Coffee-yellow.svg">
+  </a>
+<img alt="GitHub issues" src="https://img.shields.io/github/issues/alexrabin/FlutterNativeDragAndDrop?color=red">
+  <img src="https://img.shields.io/github/license/alexrabin/FlutterNativeDragAndDrop">
+  <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/alexrabin/FlutterNativeDragAndDrop?style=social">
+</p>
+
 A package that allows you to add native drag and drop support into your flutter app.
 
 ![dragndropex2](https://user-images.githubusercontent.com/15949910/150670673-c19d7d65-f9b0-4a3f-8e2a-aae8b241e28d.gif)

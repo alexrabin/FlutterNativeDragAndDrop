@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:native_drag_n_drop/src/drop_data.dart';
 import 'package:native_drag_n_drop/src/drop_view_controller.dart';
 
 class NativeDropView extends StatefulWidget {
@@ -29,10 +30,10 @@ class NativeDropView extends StatefulWidget {
 
   /// number of items allowed to be dropped at a time
   ///
-  /// When [allowedTotal] is null there is no limit
-  final int? allowedTotal;
+  /// When [allowedTotal] is 0 there is no limit
+  final int allowedTotal;
 
-  /// Restrict the types of data that can be dropped. All [DropDataType] will be accepted if this is null
+  /// Restrict the types of data that can be dropped.
   final List<DropDataType>? allowedDropDataTypes;
 
   /// Restrict the types of files that can be dropped in addition to files allowed by `allowedDropDataTypes`. All file types included in `allowedDropDataTypes` will be accepted if this is null.
@@ -40,20 +41,25 @@ class NativeDropView extends StatefulWidget {
   /// Note that this won't affect files if their data type is included in `allowedDropDataTypes`
   final List<String>? allowedDropFileExtensions;
 
+  /// A widget that adds drag and drop functionality
+  ///
+  /// Must set allowedDropDataTypes or allowedDropFileExtensions
   const NativeDropView(
       {Key? key,
       required this.child,
-      this.backgroundColor,
-      this.borderColor,
-      this.borderWidth,
+      this.allowedTotal = 0,
       this.allowedDropDataTypes,
       this.allowedDropFileExtensions,
       required this.loading,
       required this.dataReceived,
-      this.allowedTotal,
+      this.backgroundColor,
+      this.borderColor,
+      this.borderWidth,
       this.created})
       : assert((borderColor == null && borderWidth == null) ||
-            (borderColor != null && borderWidth != null)),
+            (borderColor != null && borderWidth != null) ||
+            allowedDropDataTypes != null ||
+            allowedDropFileExtensions != null),
         super(key: key);
 
   @override

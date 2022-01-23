@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/services.dart';
+import 'package:native_drag_n_drop/src/drop_data.dart';
 
 ///triggered when the data is dropped into the dropview
 typedef DropViewLoadingCallback = void Function(bool loading);
@@ -84,24 +85,29 @@ class DropViewController {
 
   /// Refreshes the params of the NativeDropView
   ///
-  /// Set allowedTotal = -1 if you don't want to have a limit
-  refreshDropViewParams(int? allowedTotal, List<DropDataType>? dataTypes,
-      List<String>? fileExts) async {
-    await _channel.invokeMethod("updateParams", {
-      'allowedTotal': allowedTotal,
-      'allowedDropDataTypes':
-          dataTypes?.map((dropDataType) => dropDataType.name).toList(),
-      'allowedDropFileExtensions': fileExts
-    });
+  /// Set allowedTotal = 0 if you don't want to have a limit
+  ///
+  /// Must set allowedDropDataTypes or allowedDropFileExtensions
+  refreshDropViewParams(
+      {int? allowedTotal,
+      List<DropDataType>? allowedDropDataTypes,
+      List<String>? allowedDropFileExtensions}) async {
+    assert(allowedDropDataTypes != null || allowedDropFileExtensions != null);
+    var params = {};
+    if (allowedTotal != null) {
+      params['allowedTotal'] = allowedTotal;
+    }
+    if (allowedDropDataTypes != null) {
+      params['allowedDropDataTypes'] = allowedDropDataTypes
+          .map((dropDataType) => dropDataType.name)
+          .toList();
+    }
+    if (allowedDropFileExtensions != null) {
+      params['allowedDropFileExtensions'] = allowedDropFileExtensions;
+    }
+    if (params.isNotEmpty) {
+      print("updated");
+      await _channel.invokeMethod("updateParams", params);
+    }
   }
-}
-
-enum DropDataType { text, url, image, video, audio, pdf, file }
-
-class DropData {
-  File? dropFile;
-  String? dropText;
-  DropDataType type;
-  Map<String, dynamic>? metadata;
-  DropData({this.dropFile, this.dropText, this.metadata, required this.type});
 }
