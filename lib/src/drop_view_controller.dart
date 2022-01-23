@@ -62,6 +62,11 @@ class DropViewController {
         var pdf = File(d['pdf'] as String);
         var dropData = DropData(type: DropDataType.pdf, dropFile: pdf);
         dropDataList.add(dropData);
+      } else if (d['file'] != null) {
+        //add pdf
+        var file = File(d['file'] as String);
+        var dropData = DropData(type: DropDataType.file, dropFile: file);
+        dropDataList.add(dropData);
       }
     }
     loadingCallback(false);
@@ -69,7 +74,7 @@ class DropViewController {
   }
 }
 
-enum DropDataType { text, url, image, video, audio, pdf }
+enum DropDataType { text, url, image, video, audio, pdf, file }
 
 class DropData {
   File? dropFile;

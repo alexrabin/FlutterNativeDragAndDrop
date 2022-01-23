@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:native_drag_n_drop/native_drag_n_drop.dart';
 
@@ -35,6 +37,13 @@ class _MyAppState extends State<MyApp> {
                   child: Stack(
                     children: [
                       NativeDropView(
+                          allowedDropDataTypes: const <DropDataType>[
+                            DropDataType.image,
+                          ],
+                          allowedDropFileExtensions: const <String>[
+                            'epub',
+                            'apk',
+                          ],
                           child: receivedData.isNotEmpty
                               ? ListView.builder(
                                   itemCount: receivedData.length,
@@ -43,6 +52,11 @@ class _MyAppState extends State<MyApp> {
                                     if (data.type == DropDataType.text) {
                                       return ListTile(
                                         title: Text(data.dropText!),
+                                      );
+                                    }
+                                    if (data.type == DropDataType.image) {
+                                      return DroppedImageListTile(
+                                        dropData: data,
                                       );
                                     }
 
@@ -76,6 +90,48 @@ class _MyAppState extends State<MyApp> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class DroppedImageListTile extends StatelessWidget {
+  const DroppedImageListTile({Key? key, required this.dropData})
+      : super(key: key);
+
+  final DropData dropData;
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<Uint8List>(
+      future: dropData.dropFile?.readAsBytes(),
+      builder: (
+        BuildContext context,
+        AsyncSnapshot snapshot,
+      ) {
+        if (snapshot.hasError) {
+          return ListTile(
+            title: Text(snapshot.error!.toString()),
+          );
+        }
+
+        if (snapshot.connectionState == ConnectionState.done) {
+          return ListTile(
+            leading: CircleAvatar(
+              backgroundColor: Colors.white,
+              backgroundImage: MemoryImage(snapshot.data!),
+            ),
+            title: Text(dropData.dropFile?.path ?? 'Path unknown'),
+          );
+        }
+
+        return ListTile(
+          leading: const CircleAvatar(
+            backgroundColor: Colors.white,
+            child: CircularProgressIndicator(),
+          ),
+          title: Text(dropData.dropFile?.path ?? 'Path unknown'),
+        );
+      },
     );
   }
 }

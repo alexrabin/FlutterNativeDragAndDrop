@@ -45,6 +45,8 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
     let viewId: Int64
     let messenger: FlutterBinaryMessenger
     let channel: FlutterMethodChannel
+    var allowedDropDataTypes: [String]?
+    var allowedDropFileExtensions: [String]?
     
     init(
         frame: CGRect,
@@ -86,7 +88,12 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
               _view.layer.borderWidth = CGFloat(borderWidth)
             }    
           }
-          
+          if let dropDataTypes = flutterArgs["allowedDropDataTypes"] as? [String] {
+              self.allowedDropDataTypes = dropDataTypes
+          }
+          if let dropFileExtensions = flutterArgs["allowedDropFileExtensions"] as? [String] {
+              self.allowedDropFileExtensions = dropFileExtensions
+          }
         }
         let dropInteraction = UIDropInteraction(delegate: self)
         _view.addInteraction(dropInteraction)
@@ -105,8 +112,88 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
         channel.invokeMethod("loadingData", arguments: "Loading your data")
     }
     public func dropInteraction(_ interaction: UIDropInteraction, canHandle session: UIDropSession) -> Bool {
-        return session.hasItemsConforming(toTypeIdentifiers: [kUTTypeImage as String, kUTTypeMovie as String, kUTTypeAudio as String, kUTTypePlainText as String, kUTTypePDF as String, kUTTypeURL as String])
+        // If no data types are specified, allow all types
+        var allowedTypeIdentifiers: [String] = []
+        if allowedDropDataTypes == nil {
+            allowedTypeIdentifiers.append(contentsOf: [kUTTypeImage as String, kUTTypeMovie as String, kUTTypeAudio as String, kUTTypePlainText as String, kUTTypePDF as String, kUTTypeURL as String, kUTTypeData as String])
+        }
+        else {
+            for dropType in allowedDropDataTypes! {
+                if dropType == "text" {
+                    allowedTypeIdentifiers.append(kUTTypePlainText as String)
+                }
+                else if dropType == "url" {
+                    allowedTypeIdentifiers.append(kUTTypeURL as String)
+                }
+                else if dropType == "image" {
+                    allowedTypeIdentifiers.append(kUTTypeImage as String)
+                }
+                else if dropType == "video" {
+                    allowedTypeIdentifiers.append(kUTTypeMovie as String)
+                }
+                else if dropType == "audio" {
+                    allowedTypeIdentifiers.append(kUTTypeAudio as String)
+                }
+                else if dropType == "pdf" {
+                    allowedTypeIdentifiers.append(kUTTypePDF as String)
+                }
+                else if dropType == "file" {
+                    allowedTypeIdentifiers.append(kUTTypeData as String)
+                }
+            }
+        }
+
+        
+
+        if allowedDropFileExtensions == nil {
+            return session.hasItemsConforming(toTypeIdentifiers: allowedTypeIdentifiers)
+        }
+
+        // Use the Uniform Type Identifiers to get the file extensions since 
+        // `session.items.first?.itemProvider.suggestedName` does not include the file extension
+        var UTIList: [String] = []
+        for item: UIDragItem in session.items {
+            let itemProvider: NSItemProvider = item.itemProvider
+            let itemTypeIdentifiers: [String] = itemProvider.registeredTypeIdentifiers
+            UTIList.append(contentsOf: itemTypeIdentifiers)
+        }
+
+        // Convert Uniform Type Identifier to Extension, code found here: https://stackoverflow.com/questions/49118095/ios-11-extracting-filename-when-doing-drag-and-drop-pdf-from-dropbox
+        var droppedFileExtensionList: [String] = []
+        for typeIdentifier: String in UTIList {
+            let cfExtensionName = UTTypeCopyPreferredTagWithClass(typeIdentifier as CFString, kUTTagClassFilenameExtension)
+            let extensionName = cfExtensionName?.takeRetainedValue() as String?
+
+            guard extensionName != nil else {
+                continue
+            }
+
+            droppedFileExtensionList.append(extensionName!.lowercased())
+        }
+
+        let hasItemsWithAllowedExtensions: Bool = Set(droppedFileExtensionList).intersection(Set(allowedDropFileExtensions!)).count > 0
+        
+        // Converting extensions to UTI to check if the dropped files match does not work because not all filetypes have a UTI
+//        // Convert the file extension to Uniform Type Identifier to
+//        var allowedExtensionTypeIdentifierList: [String] = []
+//        for fileExtension: String in allowedDropFileExtensions! {
+//            let cfTypeIdentifier = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, fileExtension.lowercased() as CFString, nil)
+//            let typeIdentifier = cfTypeIdentifier?.takeRetainedValue() as String?
+//
+//            if typeIdentifier == nil {
+//                continue
+//            }
+//
+//            allowedExtensionTypeIdentifierList.append(typeIdentifier!)
+//        }
+//        let hasItemsWithAllowedExtensions: Bool = Set(allowedExtensionTypeIdentifierList).intersection(UTIList).count > 0
+//        let hasItemsConformingToOtherTypeIdentifiers: Bool = session.hasItemsConforming(toTypeIdentifiers: allowedTypeIdentifiers.filter({$0 != kUTTypeData as String}))
+        let hasItemsConformingToOtherTypeIdentifiers: Bool = session.hasItemsConforming(toTypeIdentifiers: allowedTypeIdentifiers)
+
+        return hasItemsWithAllowedExtensions || hasItemsConformingToOtherTypeIdentifiers
+        
     }
+
     public func dropInteraction(_ interaction: UIDropInteraction, sessionDidUpdate session: UIDropSession) -> UIDropProposal {
             // Propose to the system to copy the item from the source app
         return UIDropProposal(operation: .copy)
@@ -250,6 +337,21 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
                     if (err == nil && url != nil){
                         if let fileURL = self.saveFileURL(userURL: url!){
                             data.append(["plaintext": fileURL])
+
+                        }
+                    }
+                    group.leave()
+
+                }
+            }
+            else if item.itemProvider.hasItemConformingToTypeIdentifier(kUTTypeData as String){
+                group.enter()
+
+                item.itemProvider.loadFileRepresentation(forTypeIdentifier: kUTTypeData as String) { url, err in
+
+                    if (err == nil && url != nil){
+                        if let fileURL = self.saveFileURL(userURL: url!){
+                            data.append(["file": fileURL])
 
                         }
                     }

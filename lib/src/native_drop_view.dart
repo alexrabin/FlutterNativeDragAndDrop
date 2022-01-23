@@ -16,17 +16,27 @@ class NativeDropView extends StatefulWidget {
   final DropViewLoadingCallback loadingCallback;
   final DropViewDataReceivedCallback dataReceivedCallback;
 
-  const NativeDropView(
-      {Key? key,
-      required this.child,
-      this.width,
-      this.height,
-      this.backgroundColor,
-      this.borderColor,
-      this.borderWidth,
-      required this.loadingCallback,
-      required this.dataReceivedCallback})
-      : super(key: key);
+  /// Restrict the types of data that can be dropped. All [DropDataType] will be accepted if this is null
+  final List<DropDataType>? allowedDropDataTypes;
+
+  /// Restrict the types of files that can be dropped in addition to files allowed by `allowedDropDataTypes`. All file types included in `allowedDropDataTypes` will be accepted if this is null.
+  ///
+  /// Note that this won't affect files if their data type is included in `allowedDropDataTypes`
+  final List<String>? allowedDropFileExtensions;
+
+  const NativeDropView({
+    Key? key,
+    required this.child,
+    this.width,
+    this.height,
+    this.backgroundColor,
+    this.borderColor,
+    this.borderWidth,
+    this.allowedDropDataTypes,
+    this.allowedDropFileExtensions,
+    required this.loadingCallback,
+    required this.dataReceivedCallback,
+  }) : super(key: key);
 
   @override
   State<NativeDropView> createState() => _NativeDropViewState();
@@ -63,6 +73,12 @@ class _NativeDropViewState extends State<NativeDropView> {
                       ]
                     : [],
                 "borderWidth": widget.borderWidth ?? 0,
+                "allowedDropDataTypes": widget.allowedDropDataTypes
+                    ?.map((dropDataType) => dropDataType.name)
+                    .toList(),
+                "allowedDropFileExtensions": widget.allowedDropFileExtensions
+                    ?.map((fileExt) => fileExt.toLowerCase())
+                    .toList(),
               },
               creationParamsCodec: NativeDropView._decoder,
             ),
