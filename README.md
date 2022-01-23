@@ -40,10 +40,10 @@ Widget build(BuildContext context) {
         : const Center(
             child: Text("Drop data here"),
         ),
-    loadingCallback: (loading) {
+    loading: (loading) {
         // display loading indicator / hide loading indicator
     },
-    dataReceivedCallback: (data) {
+    dataReceived: (data) {
         setState(() {
             receivedData.addAll(data);
         });
@@ -60,8 +60,9 @@ enum DropDataType { text, url, image, video, audio, pdf }
 class DropData {
   File? dropFile;
   String? dropText;
+  Map<String, dynamic>? metadata;
   DropDataType type;
-  DropData({this.dropFile, this.dropText, required this.type});
+  DropData({this.dropFile, this.dropText, this.metadata, required this.type});
 }
 ```
 It is safe to assume that if the dataType is text or url then the dropText will be non null.

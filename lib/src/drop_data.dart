@@ -1,6 +1,6 @@
 import 'dart:io';
 
-enum DropDataType { text, url, image, video, audio, pdf, custom }
+enum DropDataType { text, url, image, video, audio, pdf }
 
 class DropData {
   File? dropFile;

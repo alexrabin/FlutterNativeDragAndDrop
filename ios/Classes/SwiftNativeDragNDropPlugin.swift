@@ -67,9 +67,6 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
             if let allowedTotal = flutterArgs["allowedTotal"] as? Int{
                 self._allowedTotal = allowedTotal
             }
-          if let width = flutterArgs["width"] as? Double, let height = flutterArgs["height"] as? Double{
-              self._view.frame.size = CGSize(width: width, height: height)
-          }
           if let backgroundColor = flutterArgs["backgroundColor"] as? [Int]{
             if backgroundColor.count > 0{
               let colorValues = backgroundColor.map {
