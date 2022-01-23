@@ -188,9 +188,9 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
 //        }
 //        let hasItemsWithAllowedExtensions: Bool = Set(allowedExtensionTypeIdentifierList).intersection(UTIList).count > 0
 //        let hasItemsConformingToOtherTypeIdentifiers: Bool = session.hasItemsConforming(toTypeIdentifiers: allowedTypeIdentifiers.filter({$0 != kUTTypeData as String}))
-        let hasItemsConformingToOtherTypeIdentifiers: Bool = session.hasItemsConforming(toTypeIdentifiers: allowedTypeIdentifiers)
+        let hasItemsConformingToTypeIdentifiers: Bool = session.hasItemsConforming(toTypeIdentifiers: allowedTypeIdentifiers)
 
-        return hasItemsWithAllowedExtensions || hasItemsConformingToOtherTypeIdentifiers
+        return hasItemsWithAllowedExtensions || hasItemsConformingToTypeIdentifiers
         
     }
 
