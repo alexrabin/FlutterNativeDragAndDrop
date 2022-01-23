@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/services.dart';
-import 'package:native_drag_n_drop/src/drop_data.dart';
 
 ///triggered when the data is dropped into the dropview
 typedef DropViewLoadingCallback = void Function(bool loading);
@@ -9,6 +8,8 @@ typedef DropViewLoadingCallback = void Function(bool loading);
 ///triggered when the drop data has been received
 typedef DropViewDataReceivedCallback = void Function(
     List<DropData> receivedData);
+
+typedef DropViewCreatedCallback = void Function(DropViewController controller);
 
 class DropViewController {
   late MethodChannel _channel;
@@ -80,6 +81,19 @@ class DropViewController {
     loading(false);
     return dropDataList;
   }
+
+  /// Refreshes the params of the NativeDropView
+  ///
+  /// Set allowedTotal = -1 if you don't want to have a limit
+  refreshDropViewParams(int? allowedTotal, List<DropDataType>? dataTypes,
+      List<String>? fileExts) async {
+    await _channel.invokeMethod("updateParams", {
+      'allowedTotal': allowedTotal,
+      'allowedDropDataTypes':
+          dataTypes?.map((dropDataType) => dropDataType.name).toList(),
+      'allowedDropFileExtensions': fileExts
+    });
+  }
 }
 
 enum DropDataType { text, url, image, video, audio, pdf, file }
@@ -88,6 +102,6 @@ class DropData {
   File? dropFile;
   String? dropText;
   DropDataType type;
-  DropData({this.dropFile, this.dropText, required this.type});
+  Map<String, dynamic>? metadata;
+  DropData({this.dropFile, this.dropText, this.metadata, required this.type});
 }
-

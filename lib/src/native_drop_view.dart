@@ -24,6 +24,9 @@ class NativeDropView extends StatefulWidget {
   ///triggered when the data has been received
   final DropViewDataReceivedCallback dataReceived;
 
+  /// triggered when a controller has been initiated
+  final DropViewCreatedCallback? created;
+
   /// number of items allowed to be dropped at a time
   ///
   /// When [allowedTotal] is null there is no limit
@@ -37,27 +40,28 @@ class NativeDropView extends StatefulWidget {
   /// Note that this won't affect files if their data type is included in `allowedDropDataTypes`
   final List<String>? allowedDropFileExtensions;
 
-  const NativeDropView({
-    Key? key,
-    required this.child,
-    this.backgroundColor,
-    this.borderColor,
-    this.borderWidth,
-    this.allowedDropDataTypes,
-    this.allowedDropFileExtensions,
-    required this.loading,
-    required this.dataReceived,
-    this.allowedTotal})
-    : assert((borderColor == null && borderWidth == null) ||
+  const NativeDropView(
+      {Key? key,
+      required this.child,
+      this.backgroundColor,
+      this.borderColor,
+      this.borderWidth,
+      this.allowedDropDataTypes,
+      this.allowedDropFileExtensions,
+      required this.loading,
+      required this.dataReceived,
+      this.allowedTotal,
+      this.created})
+      : assert((borderColor == null && borderWidth == null) ||
             (borderColor != null && borderWidth != null)),
-     super(key: key);
+        super(key: key);
 
   @override
   State<NativeDropView> createState() => _NativeDropViewState();
 }
 
 class _NativeDropViewState extends State<NativeDropView> {
-  late DropViewController dropController;
+  late DropViewController _dropController;
 
   @override
   Widget build(BuildContext context) {
@@ -107,7 +111,10 @@ class _NativeDropViewState extends State<NativeDropView> {
   }
 
   void _onPlatformViewCreated(int id) {
-    dropController =
+    _dropController =
         DropViewController(id, widget.loading, widget.dataReceived);
+    if (widget.created != null) {
+      widget.created!(_dropController);
+    }
   }
 }

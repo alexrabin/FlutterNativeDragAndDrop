@@ -47,6 +47,7 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
     let channel: FlutterMethodChannel
     var _allowedDropDataTypes: [String]?
     var _allowedDropFileExtensions: [String]?
+    var _allowedTypeIdentifiers : [String] = []
     private var _allowedTotal : Int = -1
     init(
         frame: CGRect,
@@ -66,9 +67,7 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
         // iOS views can be created here
         _view.backgroundColor = UIColor.clear
         if let flutterArgs = args as? [String: Any] {
-            if let allowedTotal = flutterArgs["allowedTotal"] as? Int{
-                self._allowedTotal = allowedTotal
-            }
+            updateAllowedTotalExtsData(flutterArgs: flutterArgs)
           if let backgroundColor = flutterArgs["backgroundColor"] as? [Int]{
             if backgroundColor.count > 0{
               let colorValues = backgroundColor.map {
@@ -88,18 +87,70 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
               _view.layer.borderWidth = CGFloat(borderWidth)
             }    
           }
-          if let dropDataTypes = flutterArgs["allowedDropDataTypes"] as? [String] {
-              self._allowedDropDataTypes = dropDataTypes
-          }
-          if let dropFileExtensions = flutterArgs["allowedDropFileExtensions"] as? [String] {
-              self._allowedDropFileExtensions = dropFileExtensions
-          }
+          
         }
+
+        channel.setMethodCallHandler({ [weak self] (call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in 
+            if call.method == "updateParams"{
+                if let flutterArgs = call.arguments as? [String: Any]{
+                    self?.updateAllowedTotalExtsData(flutterArgs: flutterArgs)
+
+                }
+            }
+        })
         let dropInteraction = UIDropInteraction(delegate: self)
         _view.addInteraction(dropInteraction)
 
     }
     
+    private func updateAllowedTotalExtsData(flutterArgs : [String: Any]){
+        if let allowedTotal = flutterArgs["allowedTotal"] as? Int{
+                self._allowedTotal = allowedTotal
+                                    print("Refreshed total")
+
+            }
+        if let dropDataTypes = flutterArgs["allowedDropDataTypes"] as? [String] {
+              self._allowedDropDataTypes = dropDataTypes
+                    print("Refreshed allowedDropTypes")
+            self._allowedTypeIdentifiers = []
+              if self._allowedDropDataTypes == nil || self._allowedDropDataTypes == [] {
+                    self._allowedTypeIdentifiers.append(contentsOf: [kUTTypeImage as String, kUTTypeMovie as String, kUTTypeAudio as String, kUTTypePlainText as String, kUTTypePDF as String, kUTTypeURL as String, kUTTypeData as String])
+                }
+                else {
+                    for dropType in _allowedDropDataTypes! {
+                        if dropType == "text" {
+                            self._allowedTypeIdentifiers.append(kUTTypePlainText as String)
+                        }
+                        else if dropType == "url" {
+                            self._allowedTypeIdentifiers.append(kUTTypeURL as String)
+                        }
+                        else if dropType == "image" {
+                            self._allowedTypeIdentifiers.append(kUTTypeImage as String)
+                        }
+                        else if dropType == "video" {
+                            self._allowedTypeIdentifiers.append(kUTTypeMovie as String)
+                        }
+                        else if dropType == "audio" {
+                            self._allowedTypeIdentifiers.append(kUTTypeAudio as String)
+                        }
+                        else if dropType == "pdf" {
+                            self._allowedTypeIdentifiers.append(kUTTypePDF as String)
+                        }
+                        else if dropType == "file" {
+                            self._allowedTypeIdentifiers.append(kUTTypeData as String)
+                        }
+                    }
+                }
+                print("Refreshed allowedTypeIdentifiers")
+
+          }
+          if let dropFileExtensions = flutterArgs["allowedDropFileExtensions"] as? [String] {
+              self._allowedDropFileExtensions = dropFileExtensions
+              print("Refreshed allowedDropFileExtensions")
+
+
+          }
+    }
     public func view() -> UIView {
         return _view
     }
@@ -116,41 +167,11 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
         // If items count is greater than allowed count then can handle returns false
         if self._allowedTotal != -1 && session.items.count > self._allowedTotal{
             return false
-        }        // If no data types are specified, allow all types
-        var allowedTypeIdentifiers: [String] = []
-        if _allowedDropDataTypes == nil {
-            allowedTypeIdentifiers.append(contentsOf: [kUTTypeImage as String, kUTTypeMovie as String, kUTTypeAudio as String, kUTTypePlainText as String, kUTTypePDF as String, kUTTypeURL as String, kUTTypeData as String])
-        }
-        else {
-            for dropType in _allowedDropDataTypes! {
-                if dropType == "text" {
-                    allowedTypeIdentifiers.append(kUTTypePlainText as String)
-                }
-                else if dropType == "url" {
-                    allowedTypeIdentifiers.append(kUTTypeURL as String)
-                }
-                else if dropType == "image" {
-                    allowedTypeIdentifiers.append(kUTTypeImage as String)
-                }
-                else if dropType == "video" {
-                    allowedTypeIdentifiers.append(kUTTypeMovie as String)
-                }
-                else if dropType == "audio" {
-                    allowedTypeIdentifiers.append(kUTTypeAudio as String)
-                }
-                else if dropType == "pdf" {
-                    allowedTypeIdentifiers.append(kUTTypePDF as String)
-                }
-                else if dropType == "file" {
-                    allowedTypeIdentifiers.append(kUTTypeData as String)
-                }
-            }
-        }
-
+        }      
+          // If no data types are specified, allow all types
         
-
         if _allowedDropFileExtensions == nil {
-            return session.hasItemsConforming(toTypeIdentifiers: allowedTypeIdentifiers)
+            return session.hasItemsConforming(toTypeIdentifiers: self._allowedTypeIdentifiers)
         }
 
         // Use the Uniform Type Identifiers to get the file extensions since 
@@ -192,7 +213,7 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
 //        }
 //        let hasItemsWithAllowedExtensions: Bool = Set(allowedExtensionTypeIdentifierList).intersection(UTIList).count > 0
 //        let hasItemsConformingToOtherTypeIdentifiers: Bool = session.hasItemsConforming(toTypeIdentifiers: allowedTypeIdentifiers.filter({$0 != kUTTypeData as String}))
-        let hasItemsConformingToTypeIdentifiers: Bool = session.hasItemsConforming(toTypeIdentifiers: allowedTypeIdentifiers)
+        let hasItemsConformingToTypeIdentifiers: Bool = session.hasItemsConforming(toTypeIdentifiers: self._allowedTypeIdentifiers)
 
         return hasItemsWithAllowedExtensions || hasItemsConformingToTypeIdentifiers
     }
@@ -210,7 +231,7 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
         }
         for item in session.items{
             
-            if item.itemProvider.canLoadObject(ofClass: String.self){
+            if item.itemProvider.canLoadObject(ofClass: String.self) && self._allowedTypeIdentifiers.contains(kUTTypePlainText as String) {
                 group.enter()
 
                 _ = item.itemProvider.loadObject(ofClass: String.self) { reading, err in
@@ -259,7 +280,7 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
 
                 }
             }
-            else if item.itemProvider.canLoadObject(ofClass: NSURL.self){
+            else if item.itemProvider.canLoadObject(ofClass: NSURL.self) && self._allowedTypeIdentifiers.contains(kUTTypeURL as String){
                 group.enter()
 
                 item.itemProvider.loadObject(ofClass: NSURL.self) { reading, err in
