@@ -304,6 +304,43 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
         return UIDropProposal(operation: .copy)
     }
     
+    private func shouldAllowUrls() -> Bool {
+        return self._allowedTypeIdentifiers.contains(kUTTypeURL as String)
+    }
+    
+    private func shouldAllowPlainText() -> Bool {
+        return self._allowedTypeIdentifiers.contains(kUTTypePlainText as String)
+    }
+    
+    private func shouldAllowAudio() -> Bool {
+        return self._allowedTypeIdentifiers.contains(kUTTypeAudio as String)
+    }
+    
+    private func shouldAllowImages() -> Bool {
+        for imageID in MediaTypes.IMAGE_IDS {
+            if self._allowedTypeIdentifiers.contains(imageID) {
+                return true
+            }
+        }
+        
+        return false
+    }
+    
+    private func shouldAllowVideos() -> Bool {
+        for videoID in MediaTypes.VIDEO_IDS {
+            if self._allowedTypeIdentifiers.contains(videoID) {
+                return true
+            }
+        }
+        
+        return false
+    }
+
+    private func shouldAllowPDFs() -> Bool {
+        return self._allowedTypeIdentifiers.contains(kUTTypePDF as String)
+    }
+
+    
     public func dropInteraction(_ interaction: UIDropInteraction, performDrop session: UIDropSession) {
         var data : [Any] = []
         let group = DispatchGroup()
@@ -312,11 +349,13 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
         }
         
         for item in session.items {
+            // Check if item is allowed at all
             if !isAllowed(item) {
                 continue
             }
             
-            if item.itemProvider.canLoadObject(ofClass: String.self) && self._allowedTypeIdentifiers.contains(kUTTypePlainText as String) {
+            // Return item with the correct type
+            if item.itemProvider.canLoadObject(ofClass: String.self) && shouldAllowPlainText() {
                 group.enter()
 
                 _ = item.itemProvider.loadObject(ofClass: String.self) { reading, err in
@@ -325,7 +364,7 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
                         
                         if reading!.contains("data:image"){
                             
-                            if let imageData = Data(base64Encoded: reading!), let savedURL = self.saveImage(imageData: imageData){
+                            if let imageData = Data(base64Encoded: reading!), let savedURL = self.saveImage(imageData: imageData) {
                                 data.append(["image": savedURL])
 
                             }
@@ -365,7 +404,7 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
 
                 }
             }
-            else if item.itemProvider.canLoadObject(ofClass: NSURL.self) && self._allowedTypeIdentifiers.contains(kUTTypeURL as String){
+            else if item.itemProvider.canLoadObject(ofClass: NSURL.self) && shouldAllowUrls() {
                 group.enter()
 
                 item.itemProvider.loadObject(ofClass: NSURL.self) { reading, err in
@@ -378,7 +417,7 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
 
                 }
             }
-            else if item.itemProvider.hasItemConformingToTypeIdentifier(kUTTypeAudio as String){
+            else if item.itemProvider.hasItemConformingToTypeIdentifier(kUTTypeAudio as String) && shouldAllowAudio() {
                 group.enter()
 
                 item.itemProvider.loadFileRepresentation(forTypeIdentifier: kUTTypeAudio as String) { url, err in
@@ -393,7 +432,7 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
 
                 }
             }
-            else if hasItemsConformingToTypeIdentifiers(itemProvider: item.itemProvider, identifiers: MediaTypes.IMAGE_IDS){
+            else if hasItemsConformingToTypeIdentifiers(itemProvider: item.itemProvider, identifiers: MediaTypes.IMAGE_IDS) && shouldAllowImages() {
                 group.enter()
                 item.itemProvider.loadFileRepresentation(forTypeIdentifier: item.itemProvider.registeredTypeIdentifiers[0]) { url, err in
 
@@ -407,7 +446,7 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
 
                 }
             }
-            else if hasItemsConformingToTypeIdentifiers(itemProvider: item.itemProvider, identifiers: MediaTypes.VIDEO_IDS){
+            else if hasItemsConformingToTypeIdentifiers(itemProvider: item.itemProvider, identifiers: MediaTypes.VIDEO_IDS) && shouldAllowVideos() {
                 group.enter()
                 item.itemProvider.loadFileRepresentation(forTypeIdentifier: item.itemProvider.registeredTypeIdentifiers[0]) { url, err in
                      if (err == nil && url != nil){
@@ -420,7 +459,7 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
 
                 }
             }
-            else if item.itemProvider.hasItemConformingToTypeIdentifier(kUTTypePDF as String){
+            else if item.itemProvider.hasItemConformingToTypeIdentifier(kUTTypePDF as String) && shouldAllowPDFs() {
                 group.enter()
 
                 item.itemProvider.loadFileRepresentation(forTypeIdentifier: kUTTypePDF as String) { url, err in
@@ -434,7 +473,7 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
 
                 }
             }
-            else if item.itemProvider.hasItemConformingToTypeIdentifier(kUTTypePlainText as String){
+            else if item.itemProvider.hasItemConformingToTypeIdentifier(kUTTypePlainText as String) && shouldAllowPlainText() {
                 group.enter()
 
                 item.itemProvider.loadFileRepresentation(forTypeIdentifier: kUTTypePlainText as String) { url, err in
@@ -449,21 +488,7 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
 
                 }
             }
-            else if item.itemProvider.hasItemConformingToTypeIdentifier(kUTTypeData as String){
-                group.enter()
-
-                item.itemProvider.loadFileRepresentation(forTypeIdentifier: kUTTypeData as String) { url, err in
-
-                    if (err == nil && url != nil){
-                        if let fileURL = self.saveFileURL(userURL: url!){
-                            data.append(["file": fileURL])
-
-                        }
-                    }
-                    group.leave()
-
-                }
-            }
+            // No need to check if the file extension is allowed here because it was already checked in isAllowed()
             else if isFile(item) {
                 group.enter()
 
