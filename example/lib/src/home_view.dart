@@ -274,6 +274,7 @@ class _ListNativeDropViewState extends State<ListNativeDropView> {
                   allowedTotal: widget.allowedItemsAtOnce,
                   allowedDropDataTypes: widget.allowedDataTypes,
                   allowedDropFileExtensions: widget.allowedFileExtensions,
+                  receiveNonAllowedItems: false,
                   created: widget.created,
                   child: receivedData.isNotEmpty
                       ? ListView.builder(
