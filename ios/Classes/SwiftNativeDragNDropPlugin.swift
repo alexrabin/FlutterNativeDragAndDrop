@@ -166,8 +166,16 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
         return item.itemProvider.hasItemConformingToTypeIdentifier(kUTTypeItem as String)
     }
     
+    private func isDocument(_ item: UIDragItem) -> Bool {
+        return item.itemProvider.hasItemConformingToTypeIdentifier(kUTTypeContent as String)
+    }
+    
+    private func isCompositeDocument(_ item: UIDragItem) -> Bool {
+        return item.itemProvider.hasItemConformingToTypeIdentifier(kUTTypeContent as String)
+    }
+    
     private func isFile(_ item: UIDragItem) -> Bool {
-        return !isDirectory(item) && isFileOrDirectory(item)
+        return (!isDirectory(item) && isFileOrDirectory(item)) || isDocument(item) || isCompositeDocument(item)
     }
     
     private func getExtensionCodeFromUTI(_ typeIdentifier: String) -> String? {
