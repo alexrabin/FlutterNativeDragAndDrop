@@ -473,21 +473,6 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
 
                 }
             }
-            else if item.itemProvider.hasItemConformingToTypeIdentifier(kUTTypePlainText as String) && shouldAllowPlainText() {
-                group.enter()
-
-                item.itemProvider.loadFileRepresentation(forTypeIdentifier: kUTTypePlainText as String) { url, err in
-
-                    if (err == nil && url != nil){
-                        if let fileURL = self.saveFileURL(userURL: url!){
-                            data.append(["plaintext": fileURL])
-
-                        }
-                    }
-                    group.leave()
-
-                }
-            }
             // No need to check if the file extension is allowed here because it was already checked in isAllowed()
             else if isFile(item) {
                 group.enter()
