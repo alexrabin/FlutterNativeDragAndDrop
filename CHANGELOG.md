@@ -1,3 +1,8 @@
+## 0.0.3+1
+* Files from iCloud no longer need to be added directly to allowedDropFileExtensions when dataType == DropDataType.file 
+* Updated Readme
+
+Thank you [@getBoolean](https://github.com/getBoolean) for solving this issue
 ## 0.0.3
 * Must set allowedDropDataTypes or allowedDropFileExtensions (at least one of these attributes must be defined)
 * Fixed an issue where some file types wouldn't register from an iCloud folder

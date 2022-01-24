@@ -38,6 +38,8 @@ List<DropData> receivedData = [];
 Widget build(BuildContext context) {
     return NativeDropView(
     allowedTotal: 5,
+    allowedDropDataTypes: const [DropDataType.text, DropDataType.image, DropDataType.video],
+    allowedDropFileExtensions: ['apk', 'dart'],
     child: receivedData.isNotEmpty
         ? ListView.builder(
             itemCount: receivedData.length,
@@ -59,7 +61,7 @@ Widget build(BuildContext context) {
     loading: (loading) {
         // display loading indicator / hide loading indicator
     },
-    dataReceived: (data) {
+    dataReceived: (List<DropData> data) {
         setState(() {
             receivedData.addAll(data);
         });
@@ -68,10 +70,10 @@ Widget build(BuildContext context) {
 
 ```
 
-The dataReceivedCallback returns `List<DropData>`. 
+The dataReceived callback returns `List<DropData>`. 
 
 ```dart
-enum DropDataType { text, url, image, video, audio, pdf }
+enum DropDataType { text, url, image, video, audio, pdf, file}
 
 class DropData {
   File? dropFile;

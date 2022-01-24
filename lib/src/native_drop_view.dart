@@ -59,7 +59,8 @@ class NativeDropView extends StatefulWidget {
       : assert((borderColor == null && borderWidth == null) ||
             (borderColor != null && borderWidth != null) ||
             allowedDropDataTypes != null ||
-            allowedDropFileExtensions != null),
+            allowedDropFileExtensions != null ||
+            allowedTotal >= 0),
         super(key: key);
 
   @override

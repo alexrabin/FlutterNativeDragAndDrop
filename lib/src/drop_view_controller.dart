@@ -92,7 +92,9 @@ class DropViewController {
       {int? allowedTotal,
       List<DropDataType>? allowedDropDataTypes,
       List<String>? allowedDropFileExtensions}) async {
-    assert(allowedDropDataTypes != null || allowedDropFileExtensions != null);
+    assert(allowedDropDataTypes != null ||
+        allowedDropFileExtensions != null ||
+        (allowedTotal != null && allowedTotal >= 0));
     var params = {};
     if (allowedTotal != null) {
       params['allowedTotal'] = allowedTotal;

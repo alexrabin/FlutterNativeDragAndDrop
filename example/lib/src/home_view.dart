@@ -147,8 +147,7 @@ class _HomeViewState extends State<HomeView> {
                 });
             if (_dropViewController != null) {
               _dropViewController!.refreshDropViewParams(
-                  allowedTotal:
-                      allowedItemsAtOnce == 0 ? -1 : allowedItemsAtOnce.toInt(),
+                  allowedTotal: allowedItemsAtOnce.toInt(),
                   allowedDropDataTypes: dataTypes.keys
                       .where((element) => dataTypes[element] == true)
                       .toList(),

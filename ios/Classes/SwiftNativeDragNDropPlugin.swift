@@ -160,7 +160,7 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
     public func dropInteraction(_ interaction: UIDropInteraction, canHandle session: UIDropSession) -> Bool {
         
         // If items count is greater than allowed count then can handle returns false
-        if self._allowedTotal != 0 && session.items.count > self._allowedTotal{
+        if self._allowedTotal > 0 && session.items.count > self._allowedTotal{
             return false
         }      
         
