@@ -50,8 +50,8 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
     var _allowedDropDataTypes: [String]?
     var _allowedDropFileExtensions: [String]?
     var _allowedTypeIdentifiers : [String] = []
-
     private var _allowedTotal : Int = 0
+    
     init(
         frame: CGRect,
         viewIdentifier viewId: Int64,
@@ -156,12 +156,10 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
           }
     }
     
+    
+    
     private func isDirectory(_ item: UIDragItem) -> Bool {
         return item.itemProvider.hasItemConformingToTypeIdentifier(kUTTypeDirectory as String)
-    }
-    
-    private func isNotDirectory(_ item: UIDragItem) -> Bool {
-        return !isDirectory(item)
     }
     
     private func isFileOrDirectory(_ item: UIDragItem) -> Bool {
@@ -169,7 +167,7 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
     }
     
     private func isFile(_ item: UIDragItem) -> Bool {
-        return isNotDirectory(item) && isFileOrDirectory(item)
+        return !isDirectory(item) && isFileOrDirectory(item)
     }
     
     private func getExtensionCodeFromUTI(_ typeIdentifier: String) -> String? {
@@ -233,10 +231,57 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
         return false
     }
     
-    private func hasItemsConformingToTypeIdentifiers(_ session: UIDropSession) -> Bool {
-        let allowFiles = self._allowedTypeIdentifiers.contains(kUTTypeData as String)
+    private func shouldAllowAllFiles() -> Bool {
+        return self._allowedTypeIdentifiers.contains(kUTTypeData as String)
+    }
+    
+    private func hasItemsConformingToAllowedTypeIdentifiers(_ session: UIDropSession) -> Bool {
+        return session.hasItemsConforming(toTypeIdentifiers: self._allowedTypeIdentifiers) || (hasFile(session) && shouldAllowAllFiles() )
+    }
+    
+    
+    private func isAllowed(_ item: UIDragItem) -> Bool {
+        return itemConformsToAllowedUTType(item) || (isFile(item) && isFileExtensionAllowed(item))
+    }
+    
+    private func itemConformsToAllowedUTType(_ item: UIDragItem) -> Bool {
+        let itemUTIs: [String] = item.itemProvider.registeredTypeIdentifiers
+        for allowedUTI: String in self._allowedTypeIdentifiers {
+            for itemUTI: String in itemUTIs {
+                if UTTypeConformsTo(itemUTI as CFString, allowedUTI as CFString) {
+                    return true
+                }
+            }
+        }
         
-        return session.hasItemsConforming(toTypeIdentifiers: self._allowedTypeIdentifiers) || (self.hasFile(session) && allowFiles)
+        return false
+    }
+    
+    private func isFileExtensionAllowed(_ item: UIDragItem) -> Bool {
+        if shouldAllowAllFiles() {
+            return true
+        }
+        
+        // Files will only be dropped if they have an allowed extension
+        let itemUTIs: [String] = item.itemProvider.registeredTypeIdentifiers
+        var extensions: [String] = []
+        for typeIdentifier: String in itemUTIs {
+            let extensionName = getExtensionCodeFromUTI(typeIdentifier)
+            if extensionName == nil {
+                continue
+            }
+
+            extensions.append(extensionName!.lowercased())
+        }
+        
+        for ext: String in extensions {
+            // `_allowedDropFileExtensions` should never be null because shouldAllowAllFiles() returns true if it is
+            if self._allowedDropFileExtensions!.contains(ext) {
+                return true
+            }
+        }
+        
+        return false
     }
     
     public func dropInteraction(_ interaction: UIDropInteraction, canHandle session: UIDropSession) -> Bool {
@@ -251,7 +296,7 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
             return session.hasItemsConforming(toTypeIdentifiers: self._allowedTypeIdentifiers)
         }
         
-        return self.hasAllowedExtensionCode(session) || self.hasItemsConformingToTypeIdentifiers(session)
+        return hasAllowedExtensionCode(session) || hasItemsConformingToAllowedTypeIdentifiers(session)
     }
 
     public func dropInteraction(_ interaction: UIDropInteraction, sessionDidUpdate session: UIDropSession) -> UIDropProposal {
@@ -267,6 +312,10 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
         }
         
         for item in session.items {
+            if !isAllowed(item) {
+                continue
+            }
+            
             if item.itemProvider.canLoadObject(ofClass: String.self) && self._allowedTypeIdentifiers.contains(kUTTypePlainText as String) {
                 group.enter()
 
@@ -415,7 +464,7 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
 
                 }
             }
-            else if item.itemProvider.hasItemConformingToTypeIdentifier(kUTTypeItem as String) && isNotDirectory(item) {
+            else if isFile(item) {
                 group.enter()
 
                 item.itemProvider.loadFileRepresentation(forTypeIdentifier: kUTTypeItem as String) { url, err in
