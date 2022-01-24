@@ -382,7 +382,7 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
 
                 }
             }
-            else if item.itemProvider.hasItemConformingToTypeIdentifier(kUTTypeItem as String){
+            else if item.itemProvider.hasItemConformingToTypeIdentifier(kUTTypeItem as String) && !isDirectory(item){
                 group.enter()
 
                 item.itemProvider.loadFileRepresentation(forTypeIdentifier: kUTTypeItem as String) { url, err in
