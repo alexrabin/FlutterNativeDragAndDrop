@@ -163,15 +163,13 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
     }
     
     private func isDocument(_ item: UIDragItem) -> Bool {
-        return item.itemProvider.hasItemConformingToTypeIdentifier(kUTTypeContent as String)
-    }
-    
-    private func isCompositeDocument(_ item: UIDragItem) -> Bool {
+        // Can be document, pasteboard data, or  document packages
+        // https://web.archive.org/web/20190621082935/https://developer.apple.com/documentation/mobilecoreservices/uttype/uti_abstract_types
         return item.itemProvider.hasItemConformingToTypeIdentifier(kUTTypeContent as String)
     }
     
     private func isFile(_ item: UIDragItem) -> Bool {
-        return (!isDirectory(item) && isFileOrDirectory(item)) || isDocument(item) || isCompositeDocument(item)
+        return (!isDirectory(item) && isFileOrDirectory(item)) || isDocument(item)
     }
     
     private func getExtensionCodeFromUTI(_ typeIdentifier: String) -> String? {
