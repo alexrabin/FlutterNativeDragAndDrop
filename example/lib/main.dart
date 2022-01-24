@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:native_drag_n_drop/native_drag_n_drop.dart';
 import 'package:native_drag_n_drop_example/src/home_view.dart';

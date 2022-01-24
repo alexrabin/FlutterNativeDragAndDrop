@@ -50,8 +50,8 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
     var _allowedDropDataTypes: [String]?
     var _allowedDropFileExtensions: [String]?
     var _allowedTypeIdentifiers : [String] = []
-
     private var _allowedTotal : Int = 0
+    
     init(
         frame: CGRect,
         viewIdentifier viewId: Int64,
@@ -95,7 +95,6 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
             if call.method == "updateParams"{
                 if let flutterArgs = call.arguments as? [String: Any]{
                     self?.updateAllowedTotalExtsData(flutterArgs: flutterArgs)
-
                 }
             }
         })
@@ -106,42 +105,41 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
     
     private func updateAllowedTotalExtsData(flutterArgs : [String: Any]){
         if let allowedTotal = flutterArgs["allowedTotal"] as? Int{
-                self._allowedTotal = allowedTotal
-            }
+            self._allowedTotal = allowedTotal
+        }
         if let dropDataTypes = flutterArgs["allowedDropDataTypes"] as? [String] {
-                self._allowedDropDataTypes = dropDataTypes
-                self._allowedTypeIdentifiers = []
-               for dropType in _allowedDropDataTypes! {
-                    if dropType == "text" {
-                        self._allowedTypeIdentifiers.append(kUTTypePlainText as String)
-                    }
-                    else if dropType == "url" {
-                        self._allowedTypeIdentifiers.append(kUTTypeURL as String)
-                    }
-                    else if dropType == "image" {
-                        self._allowedTypeIdentifiers.append(contentsOf:MediaTypes.IMAGE_IDS)
-                        
-                    }
-                    else if dropType == "video" {
-                        self._allowedTypeIdentifiers.append(contentsOf: MediaTypes.VIDEO_IDS)
-                        
-
-                    }
-                    else if dropType == "audio" {
-                        self._allowedTypeIdentifiers.append(kUTTypeAudio as String)
-                    }
-                    else if dropType == "pdf" {
-                        self._allowedTypeIdentifiers.append(kUTTypePDF as String)
-                    }
-                    else if dropType == "file" {
-                        self._allowedTypeIdentifiers.append(kUTTypeData as String)
-                    }
+            self._allowedDropDataTypes = dropDataTypes
+            self._allowedTypeIdentifiers = []
+            for dropType in _allowedDropDataTypes! {
+                if dropType == "text" {
+                    self._allowedTypeIdentifiers.append(kUTTypePlainText as String)
                 }
-          }
-          if let dropFileExtensions = flutterArgs["allowedDropFileExtensions"] as? [String] {
-              self._allowedDropFileExtensions = dropFileExtensions
+                else if dropType == "url" {
+                    self._allowedTypeIdentifiers.append(kUTTypeURL as String)
+                }
+                else if dropType == "image" {
+                    self._allowedTypeIdentifiers.append(contentsOf:MediaTypes.IMAGE_IDS)
+                    
+                }
+                else if dropType == "video" {
+                    self._allowedTypeIdentifiers.append(contentsOf: MediaTypes.VIDEO_IDS)
+                    
 
-          }
+                }
+                else if dropType == "audio" {
+                    self._allowedTypeIdentifiers.append(kUTTypeAudio as String)
+                }
+                else if dropType == "pdf" {
+                    self._allowedTypeIdentifiers.append(kUTTypePDF as String)
+                }
+                else if dropType == "file" {
+                    self._allowedTypeIdentifiers.append(kUTTypeData as String)
+                }
+            }
+        }
+        if let dropFileExtensions = flutterArgs["allowedDropFileExtensions"] as? [String] {
+            self._allowedDropFileExtensions = dropFileExtensions
+        }
     }
     public func view() -> UIView {
         return _view
@@ -149,10 +147,15 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
 
     public func sendDropData(_ data: Any){
         channel.invokeMethod("receivedDropData", arguments: data)
-
     }
     public func sendLoadingNotification(){
         channel.invokeMethod("loadingData", arguments: "Loading your data")
+    }
+    private func isDirectory(_ item: UIDragItem) -> Bool {
+        return item.itemProvider.hasItemConformingToTypeIdentifier(kUTTypeDirectory as String)
+    }
+    private func isFileOrDirectory(_ item: UIDragItem) -> Bool {
+        return item.itemProvider.hasItemConformingToTypeIdentifier(kUTTypeItem as String)
     }
     public func dropInteraction(_ interaction: UIDropInteraction, canHandle session: UIDropSession) -> Bool {
         
@@ -160,8 +163,8 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
         if self._allowedTotal != 0 && session.items.count > self._allowedTotal{
             return false
         }      
-          // If no data types are specified, allow all types
         
+        // If no data types are specified, allow all types
         if self._allowedDropFileExtensions == nil {
             return session.hasItemsConforming(toTypeIdentifiers: self._allowedTypeIdentifiers)
         }
@@ -190,6 +193,16 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
 
         let hasItemsWithAllowedExtensions: Bool = Set(droppedFileExtensionList).intersection(Set(self._allowedDropFileExtensions!)).count > 0
         
+        var hasFile: Bool = false
+        for item: UIDragItem in session.items {
+            if !isDirectory(item) && isFileOrDirectory(item) {
+                hasFile = true
+                break
+            }
+        }
+        
+        let allowFiles = self._allowedTypeIdentifiers.contains(kUTTypeData as String)
+        
         // Converting extensions to UTI to check if the dropped files match does not work because not all filetypes have a UTI
 //        // Convert the file extension to Uniform Type Identifier to
 //        var allowedExtensionTypeIdentifierList: [String] = []
@@ -207,7 +220,7 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
 //        let hasItemsConformingToOtherTypeIdentifiers: Bool = session.hasItemsConforming(toTypeIdentifiers: allowedTypeIdentifiers.filter({$0 != kUTTypeData as String}))
         let hasItemsConformingToTypeIdentifiers: Bool = session.hasItemsConforming(toTypeIdentifiers: self._allowedTypeIdentifiers)
 
-        return hasItemsWithAllowedExtensions || hasItemsConformingToTypeIdentifiers
+        return hasItemsWithAllowedExtensions || hasItemsConformingToTypeIdentifiers || (hasFile && allowFiles)
     }
 
     public func dropInteraction(_ interaction: UIDropInteraction, sessionDidUpdate session: UIDropSession) -> UIDropProposal {
@@ -233,7 +246,6 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
                             
                             if let imageData = Data(base64Encoded: reading!), let savedURL = self.saveImage(imageData: imageData){
                                 data.append(["image": savedURL])
-
                             }
                         }
                         else {
@@ -370,7 +382,7 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
 
                 }
             }
-            else if item.itemProvider.hasItemConformingToTypeIdentifier(kUTTypeItem as String){
+            else if item.itemProvider.hasItemConformingToTypeIdentifier(kUTTypeItem as String) && !isDirectory(item){
                 group.enter()
 
                 item.itemProvider.loadFileRepresentation(forTypeIdentifier: kUTTypeItem as String) { url, err in
@@ -436,23 +448,23 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
         return nil
     }
     func saveFileURL(userURL: URL) -> String? {
-            let fileManager = FileManager()
+        let fileManager = FileManager()
 
-            let filename = (UUID().uuidString + userURL.lastPathComponent).replacingOccurrences(of: "%20", with: " ")
-            let path = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0] as String
-            let url = URL(fileURLWithPath: path)
-            let filePath = url.appendingPathComponent(filename)
-            if fileManager.fileExists(atPath: filePath.path){
-                guard ((try? fileManager.removeItem(atPath: filePath.path)) != nil) else {
-                    return nil
-                }
-            }
-            guard ((try? fileManager.copyItem(at: userURL, to: filePath)) != nil) else {
-
+        let filename = (UUID().uuidString + userURL.lastPathComponent).replacingOccurrences(of: "%20", with: " ")
+        let path = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0] as String
+        let url = URL(fileURLWithPath: path)
+        let filePath = url.appendingPathComponent(filename)
+        if fileManager.fileExists(atPath: filePath.path){
+            guard ((try? fileManager.removeItem(atPath: filePath.path)) != nil) else {
                 return nil
             }
+        }
+        guard ((try? fileManager.copyItem(at: userURL, to: filePath)) != nil) else {
 
-            return filePath.path.replacingOccurrences(of: "file://", with: "")
+            return nil
+        }
+
+        return filePath.path.replacingOccurrences(of: "file://", with: "")
     }
     
     func clearTempFiles(){
