@@ -132,12 +132,9 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
                 }
                 else if dropType == "image" {
                     self._allowedTypeIdentifiers.append(contentsOf:MediaTypes.IMAGE_IDS)
-                    
                 }
                 else if dropType == "video" {
                     self._allowedTypeIdentifiers.append(contentsOf: MediaTypes.VIDEO_IDS)
-                    
-
                 }
                 else if dropType == "audio" {
                     self._allowedTypeIdentifiers.append(kUTTypeAudio as String)
