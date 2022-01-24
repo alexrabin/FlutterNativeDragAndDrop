@@ -116,44 +116,43 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
         channel.invokeMethod("loadingData", arguments: "Loading your data")
     }
     
-    private func updateAllowedTotalExtsData(flutterArgs : [String: Any]){
-        if let allowedTotal = flutterArgs["allowedTotal"] as? Int{
-                self._allowedTotal = allowedTotal
-            }
+    private func updateAllowedTotalExtsData(flutterArgs : [String: Any]) {
+        if let allowedTotal = flutterArgs["allowedTotal"] as? Int   {
+            self._allowedTotal = allowedTotal
+        }
         if let dropDataTypes = flutterArgs["allowedDropDataTypes"] as? [String] {
-                self._allowedDropDataTypes = dropDataTypes
-                self._allowedTypeIdentifiers = []
-               for dropType in _allowedDropDataTypes! {
-                    if dropType == "text" {
-                        self._allowedTypeIdentifiers.append(kUTTypePlainText as String)
-                    }
-                    else if dropType == "url" {
-                        self._allowedTypeIdentifiers.append(kUTTypeURL as String)
-                    }
-                    else if dropType == "image" {
-                        self._allowedTypeIdentifiers.append(contentsOf:MediaTypes.IMAGE_IDS)
-                        
-                    }
-                    else if dropType == "video" {
-                        self._allowedTypeIdentifiers.append(contentsOf: MediaTypes.VIDEO_IDS)
-                        
-
-                    }
-                    else if dropType == "audio" {
-                        self._allowedTypeIdentifiers.append(kUTTypeAudio as String)
-                    }
-                    else if dropType == "pdf" {
-                        self._allowedTypeIdentifiers.append(kUTTypePDF as String)
-                    }
-                    else if dropType == "file" {
-                        self._allowedTypeIdentifiers.append(kUTTypeData as String)
-                    }
+            self._allowedDropDataTypes = dropDataTypes
+            self._allowedTypeIdentifiers = []
+            for dropType in _allowedDropDataTypes! {
+                if dropType == "text" {
+                    self._allowedTypeIdentifiers.append(kUTTypePlainText as String)
                 }
-          }
-          if let dropFileExtensions = flutterArgs["allowedDropFileExtensions"] as? [String] {
-              self._allowedDropFileExtensions = dropFileExtensions
+                else if dropType == "url" {
+                    self._allowedTypeIdentifiers.append(kUTTypeURL as String)
+                }
+                else if dropType == "image" {
+                    self._allowedTypeIdentifiers.append(contentsOf:MediaTypes.IMAGE_IDS)
+                    
+                }
+                else if dropType == "video" {
+                    self._allowedTypeIdentifiers.append(contentsOf: MediaTypes.VIDEO_IDS)
+                    
 
-          }
+                }
+                else if dropType == "audio" {
+                    self._allowedTypeIdentifiers.append(kUTTypeAudio as String)
+                }
+                else if dropType == "pdf" {
+                    self._allowedTypeIdentifiers.append(kUTTypePDF as String)
+                }
+                else if dropType == "file" {
+                    self._allowedTypeIdentifiers.append(kUTTypeData as String)
+                }
+            }
+        }
+        if let dropFileExtensions = flutterArgs["allowedDropFileExtensions"] as? [String] {
+          self._allowedDropFileExtensions = dropFileExtensions
+        }
     }
     
     
