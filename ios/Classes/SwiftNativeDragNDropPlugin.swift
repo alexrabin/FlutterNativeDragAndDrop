@@ -151,6 +151,12 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
     public func sendLoadingNotification(){
         channel.invokeMethod("loadingData", arguments: "Loading your data")
     }
+    private func isDirectory(_ item: UIDragItem) -> Bool {
+        return item.itemProvider.hasItemConformingToTypeIdentifier(kUTTypeDirectory as String)
+    }
+    private func isFileOrDirectory(_ item: UIDragItem) -> Bool {
+        return item.itemProvider.hasItemConformingToTypeIdentifier(kUTTypeItem as String)
+    }
     public func dropInteraction(_ interaction: UIDropInteraction, canHandle session: UIDropSession) -> Bool {
         
         // If items count is greater than allowed count then can handle returns false
@@ -187,6 +193,16 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
 
         let hasItemsWithAllowedExtensions: Bool = Set(droppedFileExtensionList).intersection(Set(self._allowedDropFileExtensions!)).count > 0
         
+        var hasFile: Bool = false
+        for item: UIDragItem in session.items {
+            if !isDirectory(item) && isFileOrDirectory(item) {
+                hasFile = true
+                break
+            }
+        }
+        
+        let allowFiles = self._allowedTypeIdentifiers.contains(kUTTypeData as String)
+        
         // Converting extensions to UTI to check if the dropped files match does not work because not all filetypes have a UTI
 //        // Convert the file extension to Uniform Type Identifier to
 //        var allowedExtensionTypeIdentifierList: [String] = []
@@ -204,7 +220,7 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
 //        let hasItemsConformingToOtherTypeIdentifiers: Bool = session.hasItemsConforming(toTypeIdentifiers: allowedTypeIdentifiers.filter({$0 != kUTTypeData as String}))
         let hasItemsConformingToTypeIdentifiers: Bool = session.hasItemsConforming(toTypeIdentifiers: self._allowedTypeIdentifiers)
 
-        return hasItemsWithAllowedExtensions || hasItemsConformingToTypeIdentifiers
+        return hasItemsWithAllowedExtensions || hasItemsConformingToTypeIdentifiers || (hasFile && allowFiles)
     }
 
     public func dropInteraction(_ interaction: UIDropInteraction, sessionDidUpdate session: UIDropSession) -> UIDropProposal {
