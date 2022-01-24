@@ -51,6 +51,7 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
     var _allowedDropFileExtensions: [String]?
     var _allowedTypeIdentifiers : [String] = []
     private var _allowedTotal : Int = 0
+    private var _receiveNonAllowedItems: Bool = true;
     
     init(
         frame: CGRect,
@@ -149,6 +150,9 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
         }
         if let dropFileExtensions = flutterArgs["allowedDropFileExtensions"] as? [String] {
           self._allowedDropFileExtensions = dropFileExtensions
+        }
+        if let receiveNonAllowedItems = flutterArgs["receiveNonAllowedItems"] as? Bool {
+          self._receiveNonAllowedItems = receiveNonAllowedItems
         }
     }
     
@@ -352,7 +356,7 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
         
         for item in session.items {
             // Check if item is allowed at all
-            if !isAllowed(item) {
+            if !self._receiveNonAllowedItems && !isAllowed(item) {
                 continue
             }
             
