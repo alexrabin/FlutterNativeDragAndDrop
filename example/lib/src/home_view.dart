@@ -284,6 +284,7 @@ class _ListNativeDropViewState extends State<ListNativeDropView> {
                             if (data.type == DropDataType.text) {
                               return ListTile(
                                 title: Text(data.dropText!),
+                                subtitle: Text(data.type.toString()),
                               );
                             }
                             if (data.type == DropDataType.image) {
@@ -294,6 +295,7 @@ class _ListNativeDropViewState extends State<ListNativeDropView> {
 
                             return ListTile(
                               title: Text(data.dropFile!.path),
+                              subtitle: Text(data.type.toString()),
                             );
                           })
                       : const Center(

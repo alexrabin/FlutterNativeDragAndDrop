@@ -30,6 +30,7 @@ class DroppedImageListTile extends StatelessWidget {
               backgroundImage: MemoryImage(snapshot.data!),
             ),
             title: Text(dropData.dropFile?.path ?? 'Path unknown'),
+            subtitle: Text(dropData.type.toString()),
           );
         }
 
@@ -39,6 +40,7 @@ class DroppedImageListTile extends StatelessWidget {
             child: CircularProgressIndicator(),
           ),
           title: Text(dropData.dropFile?.path ?? 'Path unknown'),
+          subtitle: Text(dropData.type.toString()),
         );
       },
     );
