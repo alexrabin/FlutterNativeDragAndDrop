@@ -34,12 +34,21 @@ class NativeDropView extends StatefulWidget {
   final int allowedTotal;
 
   /// Restrict the types of data that can be dropped.
+  /// 
+  /// When [DropDataType.file] is allowed, it will also allow [DropDataType.image], [DropDataType.audio], [DropDataType.video], and [DropDataType.pdf]. Their type will be set as [DropDataType.file] unless their type is also included here.
   final List<DropDataType>? allowedDropDataTypes;
 
   /// Restrict the types of files that can be dropped in addition to files allowed by `allowedDropDataTypes`. All file types included in `allowedDropDataTypes` will be accepted if this is null.
   ///
   /// Note that this won't affect files if their data type is included in `allowedDropDataTypes`
   final List<String>? allowedDropFileExtensions;
+
+  /// Receive all dropped items if at least one item is allowed. Defaults to true
+  /// 
+  /// Disable this to only receive items that have been allowed in `allowedDropDataTypes` and `allowedDropFileExtensions`
+  /// 
+  /// It is recommended to keep this enabled, and instead give feedback to the user when they have dropped an item that is not allowed.
+  final bool receiveNonAllowedItems;
 
   /// A widget that adds drag and drop functionality
   ///
@@ -50,6 +59,7 @@ class NativeDropView extends StatefulWidget {
       this.allowedTotal = 0,
       this.allowedDropDataTypes,
       this.allowedDropFileExtensions,
+      this.receiveNonAllowedItems = true,
       required this.loading,
       required this.dataReceived,
       this.backgroundColor,
@@ -105,6 +115,7 @@ class _NativeDropViewState extends State<NativeDropView> {
                 "allowedDropFileExtensions": widget.allowedDropFileExtensions
                     ?.map((fileExt) => fileExt.toLowerCase())
                     .toList(),
+                "receiveNonAllowedItems": widget.receiveNonAllowedItems,
               },
               creationParamsCodec: NativeDropView._decoder,
             ),

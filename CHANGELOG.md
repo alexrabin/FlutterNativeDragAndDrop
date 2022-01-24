@@ -1,3 +1,11 @@
+## 0.0.3+2
+* Added boolean `NativeDropView.receiveNonAllowedItems` to allow non-allowed items to be dropped if at least one item in the dropping session was allowed
+* Fixed a bug where files such as PDF would be categorized as DropDataType.pdf even if only DropDataType.file was allowed
+* Fixed a bug where documents (such as .numbers) dropped from iCloud would not be accepted
+* Refactor iOS Swift code for readability
+
+Thank you @getBoolean
+
 ## 0.0.3+1
 * Files from iCloud no longer need to be added directly to allowedDropFileExtensions when dataType == DropDataType.file 
 * Updated Readme

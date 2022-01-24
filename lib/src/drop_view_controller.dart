@@ -88,10 +88,12 @@ class DropViewController {
   /// Set allowedTotal = 0 if you don't want to have a limit
   ///
   /// Must set allowedDropDataTypes or allowedDropFileExtensions
-  refreshDropViewParams(
-      {int? allowedTotal,
-      List<DropDataType>? allowedDropDataTypes,
-      List<String>? allowedDropFileExtensions}) async {
+  refreshDropViewParams({
+    int? allowedTotal,
+    List<DropDataType>? allowedDropDataTypes,
+    List<String>? allowedDropFileExtensions,
+    bool? receiveNonAllowedItems,
+  }) async {
     assert(allowedDropDataTypes != null ||
         allowedDropFileExtensions != null ||
         (allowedTotal != null && allowedTotal >= 0));
@@ -106,6 +108,9 @@ class DropViewController {
     }
     if (allowedDropFileExtensions != null) {
       params['allowedDropFileExtensions'] = allowedDropFileExtensions;
+    }
+    if (receiveNonAllowedItems != null) {
+      params['receiveNonAllowedItems'] = receiveNonAllowedItems;
     }
     if (params.isNotEmpty) {
       print("updated");
