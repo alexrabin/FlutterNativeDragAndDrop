@@ -45,7 +45,7 @@ class NativeDropView extends StatefulWidget {
   /// 
   /// Disable this to only receive items that have been allowed in `allowedDropDataTypes` and `allowedDropFileExtensions`
   /// 
-  /// It is recommended to keep this enabled and give feedback to the user when they have dropped an item that is not allowed
+  /// It is recommended to keep this enabled, and instead give feedback to the user when they have dropped an item that is not allowed.
   final bool receiveNonAllowedItems;
 
   /// A widget that adds drag and drop functionality
