@@ -241,51 +241,6 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
         return session.hasItemsConforming(toTypeIdentifiers: self._allowedTypeIdentifiers) || (hasFile(session) && shouldAllowAllFiles() )
     }
     
-    
-    private func isAllowed(_ item: UIDragItem) -> Bool {
-        return itemConformsToAllowedUTType(item) || (isFile(item) && isFileExtensionAllowed(item))
-    }
-    
-    private func itemConformsToAllowedUTType(_ item: UIDragItem) -> Bool {
-        let itemUTIs: [String] = item.itemProvider.registeredTypeIdentifiers
-        for allowedUTI: String in self._allowedTypeIdentifiers {
-            for itemUTI: String in itemUTIs {
-                if UTTypeConformsTo(itemUTI as CFString, allowedUTI as CFString) {
-                    return true
-                }
-            }
-        }
-        
-        return false
-    }
-    
-    private func isFileExtensionAllowed(_ item: UIDragItem) -> Bool {
-        if shouldAllowAllFiles() {
-            return true
-        }
-        
-        // Files will only be dropped if they have an allowed extension
-        let itemUTIs: [String] = item.itemProvider.registeredTypeIdentifiers
-        var extensions: [String] = []
-        for typeIdentifier: String in itemUTIs {
-            let extensionName = getExtensionCodeFromUTI(typeIdentifier)
-            if extensionName == nil {
-                continue
-            }
-
-            extensions.append(extensionName!.lowercased())
-        }
-        
-        for ext: String in extensions {
-            // `_allowedDropFileExtensions` should never be null because shouldAllowAllFiles() returns true if it is
-            if self._allowedDropFileExtensions!.contains(ext) {
-                return true
-            }
-        }
-        
-        return false
-    }
-    
     public func dropInteraction(_ interaction: UIDropInteraction, canHandle session: UIDropSession) -> Bool {
         
         // If items count is greater than allowed count then can handle returns false
@@ -351,13 +306,8 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
         }
         
         for item in session.items {
-            // Check if item is allowed at all
-            if !isAllowed(item) {
-                continue
-            }
-            
             // Return item with the correct type
-            if item.itemProvider.canLoadObject(ofClass: String.self) && shouldAllowPlainText() {
+            if item.itemProvider.canLoadObject(ofClass: String.self) {
                 group.enter()
 
                 _ = item.itemProvider.loadObject(ofClass: String.self) { reading, err in
@@ -406,7 +356,7 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
 
                 }
             }
-            else if item.itemProvider.canLoadObject(ofClass: NSURL.self) && shouldAllowUrls() {
+            else if item.itemProvider.canLoadObject(ofClass: NSURL.self) {
                 group.enter()
 
                 item.itemProvider.loadObject(ofClass: NSURL.self) { reading, err in
