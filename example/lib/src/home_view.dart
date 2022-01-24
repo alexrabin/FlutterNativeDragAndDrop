@@ -17,7 +17,7 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
-  TextEditingController _textFieldController = TextEditingController();
+  final TextEditingController _textFieldController = TextEditingController();
   double allowedItemsAtOnce = 5;
   DropViewController? _dropViewController;
   Map<DropDataType, bool> dataTypes = {
