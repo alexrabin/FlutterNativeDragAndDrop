@@ -301,7 +301,7 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
         
         // If no data types are specified, allow all types
         if self._allowedDropFileExtensions == nil {
-            return session.hasItemsConforming(toTypeIdentifiers: self._allowedTypeIdentifiers)
+            return session.hasItemsConforming(toTypeIdentifiers: self._allowedTypeIdentifiers) || (hasFile(session) && shouldAllowAllFiles() )
         }
         
         return hasAllowedExtensionCode(session) || hasItemsConformingToAllowedTypeIdentifiers(session)
