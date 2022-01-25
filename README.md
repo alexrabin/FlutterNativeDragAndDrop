@@ -16,6 +16,7 @@
 </p>
 
 A package that allows you to add native drag and drop support into your flutter app.
+
 ![iPadDropExample](https://user-images.githubusercontent.com/15949910/150702838-817e24cd-9494-43e3-a077-64a036393b0a.gif)
 
 ![dragndropex2](https://user-images.githubusercontent.com/15949910/150670673-c19d7d65-f9b0-4a3f-8e2a-aae8b241e28d.gif)
@@ -40,6 +41,7 @@ Widget build(BuildContext context) {
     allowedTotal: 5,
     allowedDropDataTypes: const [DropDataType.text, DropDataType.image, DropDataType.video],
     allowedDropFileExtensions: ['apk', 'dart'],
+    receiveNonAllowedItems: false,
     child: receivedData.isNotEmpty
         ? ListView.builder(
             itemCount: receivedData.length,
@@ -85,8 +87,9 @@ class DropData {
 ```
 It is safe to assume that if the dataType is text or url then the dropText will be non null.
 
-As for image, video, audio, pdf it is safe to assume the dropFile will be non null
+As for image, video, audio, pdf, file it is safe to assume the dropFile will be non null
 
+All files are saved to the temp directory on the device so if you want to save the file to the device [copy its data to a file in the documents directory](https://programmingwithswift.com/how-to-save-a-file-locally-with-flutter/). 
 ## Todo
 
 - [x] specify the number of items allowed to be dropped at a time

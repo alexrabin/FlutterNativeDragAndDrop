@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:native_drag_n_drop/native_drag_n_drop.dart';
 import 'package:native_drag_n_drop_example/src/dropped_image_list_title.dart';
@@ -29,9 +30,8 @@ class _HomeViewState extends State<HomeView> {
     DropDataType.audio: true,
     DropDataType.file: true
   };
-
+  bool _receiveNonAllowedItems = true;
   List<String> allowedFileExtensions = [];
-  var panelActiveStatus = [false, false, false];
   late StateSetter _setState;
   @override
   Widget build(BuildContext context) {
@@ -101,6 +101,48 @@ class _HomeViewState extends State<HomeView> {
                                 },
                               ),
                               const Divider(),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: CheckboxListTile(
+                                    title: const Text(
+                                        "Receive non-allowed items if at least one item is allowed"),
+                                    value: _receiveNonAllowedItems,
+                                    subtitle: Row(
+                                      children: [
+                                        TextButton.icon(
+                                            onPressed: () {
+                                              showDialog(
+                                                  context: context,
+                                                  builder: (context) {
+                                                    return AlertDialog(
+                                                      content: const Text(
+                                                          "It is recommended to keep this enabled, and instead give feedback to the user when they have dropped an item that is not allowed."),
+                                                      actions: [
+                                                        TextButton(
+                                                            onPressed: () {
+                                                              Navigator.of(
+                                                                      context)
+                                                                  .pop();
+                                                            },
+                                                            child: const Text(
+                                                                "Awesome!"))
+                                                      ],
+                                                    );
+                                                  });
+                                            },
+                                            icon: const Icon(Icons.info),
+                                            label: const Text(
+                                                "Why would I want this?")),
+                                        const Spacer()
+                                      ],
+                                    ),
+                                    onChanged: (bool? value) {
+                                      _setState(() {
+                                        _receiveNonAllowedItems = value!;
+                                      });
+                                    }),
+                              ),
+                              const Divider(),
                               const Center(child: Text('Allowed data types:')),
                               ...dataTypes.keys.map((key) {
                                 return CheckboxListTile(
@@ -113,29 +155,40 @@ class _HomeViewState extends State<HomeView> {
                                     });
                               }).toList(),
                               const Divider(),
-                              const Padding(
-                                padding: EdgeInsets.all(8.0),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
                                 child: Center(
-                                    child: Text('Allowed file extensions:')),
+                                    child: Row(
+                                  children: [
+                                    const Text('Allowed file extensions:'),
+                                    const Spacer(),
+                                    ElevatedButton(
+                                        onPressed: () {
+                                          _displayTextInputDialog(context);
+                                        },
+                                        child: const Text("Add extension")),
+                                  ],
+                                )),
                               ),
-                              ElevatedButton(
-                                  onPressed: () {
-                                    _displayTextInputDialog(context);
-                                  },
-                                  child: const Text("Add extension")),
                               ...allowedFileExtensions.mapIndexed((ext, index) {
-                                return ListTile(
-                                  title: Text(
-                                    ext,
-                                  ),
-                                  trailing: IconButton(
-                                    icon: const Icon(Icons.close),
-                                    onPressed: () {
-                                      _setState(() {
-                                        allowedFileExtensions.removeAt(index);
-                                      });
-                                    },
-                                  ),
+                                return Column(
+                                  children: [
+                                    ListTile(
+                                      title: Text(
+                                        ext,
+                                      ),
+                                      trailing: IconButton(
+                                        icon: const Icon(Icons.close),
+                                        onPressed: () {
+                                          _setState(() {
+                                            allowedFileExtensions
+                                                .removeAt(index);
+                                          });
+                                        },
+                                      ),
+                                    ),
+                                    const Divider()
+                                  ],
                                 );
                               }).toList(),
                             ],
@@ -151,7 +204,8 @@ class _HomeViewState extends State<HomeView> {
                   allowedDropDataTypes: dataTypes.keys
                       .where((element) => dataTypes[element] == true)
                       .toList(),
-                  allowedDropFileExtensions: allowedFileExtensions);
+                  allowedDropFileExtensions: allowedFileExtensions,
+                  receiveNonAllowedItems: _receiveNonAllowedItems);
             }
           },
         ),
@@ -167,6 +221,7 @@ class _HomeViewState extends State<HomeView> {
                     .where((element) => dataTypes[element] == true)
                     .toList(),
                 allowedFileExtensions: allowedFileExtensions,
+                receiveNonAllowedItems: _receiveNonAllowedItems,
                 created: (DropViewController controller) {
                   _dropViewController = controller;
                 },
@@ -232,12 +287,14 @@ class ListNativeDropView extends StatefulWidget {
   final List<DropDataType>? allowedDataTypes;
   final List<String>? allowedFileExtensions;
   final DropViewCreatedCallback created;
+  final bool receiveNonAllowedItems;
   const ListNativeDropView(
       {Key? key,
       required this.allowedItemsAtOnce,
       this.allowedDataTypes,
       this.allowedFileExtensions,
-      required this.created})
+      required this.created,
+      this.receiveNonAllowedItems = false})
       : super(key: key);
 
   @override
@@ -274,30 +331,58 @@ class _ListNativeDropViewState extends State<ListNativeDropView> {
                   allowedTotal: widget.allowedItemsAtOnce,
                   allowedDropDataTypes: widget.allowedDataTypes,
                   allowedDropFileExtensions: widget.allowedFileExtensions,
-                  receiveNonAllowedItems: false,
+                  receiveNonAllowedItems: widget.receiveNonAllowedItems,
                   created: widget.created,
                   child: receivedData.isNotEmpty
                       ? ListView.builder(
                           shrinkWrap: true,
                           itemCount: receivedData.length,
                           itemBuilder: (context, index) {
-                            var data = receivedData[index];
-                            if (data.type == DropDataType.text) {
-                              return ListTile(
-                                title: Text(data.dropText!),
-                                subtitle: Text(data.type.toString()),
-                              );
-                            }
-                            if (data.type == DropDataType.image) {
-                              return DroppedImageListTile(
-                                dropData: data,
-                              );
-                            }
+                            return Dismissible(
+                                direction: DismissDirection.endToStart,
+                                onDismissed: (d) {
+                                  receivedData.removeAt(index);
+                                  setState(() {});
+                                },
+                                background: Container(
+                                  color: Colors.red,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: const [
+                                      Spacer(),
+                                      Icon(
+                                        Icons.delete,
+                                        color: Colors.white,
+                                        size: 30,
+                                      ),
+                                      SizedBox(
+                                        width: 10,
+                                      )
+                                    ],
+                                  ),
+                                ),
+                                key: Key(Random().nextInt(10000).toString()),
+                                child: Builder(
+                                  builder: (context) {
+                                    var data = receivedData[index];
+                                    if (data.type == DropDataType.text) {
+                                      return ListTile(
+                                        title: Text(data.dropText!),
+                                        subtitle: Text(data.type.toString()),
+                                      );
+                                    }
+                                    if (data.type == DropDataType.image) {
+                                      return DroppedImageListTile(
+                                        dropData: data,
+                                      );
+                                    }
 
-                            return ListTile(
-                              title: Text(data.dropFile!.path),
-                              subtitle: Text(data.type.toString()),
-                            );
+                                    return ListTile(
+                                      title: Text(data.dropFile!.path),
+                                      subtitle: Text(data.type.toString()),
+                                    );
+                                  },
+                                ));
                           })
                       : const Center(
                           child: Text("Drop data here"),
