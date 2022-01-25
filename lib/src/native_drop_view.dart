@@ -34,7 +34,7 @@ class NativeDropView extends StatefulWidget {
   final int allowedTotal;
 
   /// Restrict the types of data that can be dropped.
-  /// 
+  ///
   /// When [DropDataType.file] is allowed, it will also allow [DropDataType.image], [DropDataType.audio], [DropDataType.video], and [DropDataType.pdf]. Their type will be set as [DropDataType.file] unless their type is also included here.
   final List<DropDataType>? allowedDropDataTypes;
 
@@ -44,9 +44,9 @@ class NativeDropView extends StatefulWidget {
   final List<String>? allowedDropFileExtensions;
 
   /// Receive all dropped items if at least one item is allowed. Defaults to true
-  /// 
+  ///
   /// Disable this to only receive items that have been allowed in `allowedDropDataTypes` and `allowedDropFileExtensions`
-  /// 
+  ///
   /// It is recommended to keep this enabled, and instead give feedback to the user when they have dropped an item that is not allowed.
   final bool receiveNonAllowedItems;
 
