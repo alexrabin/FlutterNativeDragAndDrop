@@ -1,3 +1,6 @@
+## 0.0.3+3
+* Fixed an issue where the flutter app would crash if `allowedDropFileExtensions` wasn't defined
+
 ## 0.0.3+2
 * Added boolean `NativeDropView.receiveNonAllowedItems` to allow non-allowed items to be dropped if at least one item in the dropping session was allowed
 * Fixed a bug where files such as PDF would be categorized as DropDataType.pdf even if only DropDataType.file was allowed

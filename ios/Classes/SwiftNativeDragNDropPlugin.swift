@@ -268,6 +268,9 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
             return true
         }
         
+        if _allowedDropFileExtensions == nil {
+            return false
+        }
         // Files will only be dropped if they have an allowed extension
         let itemUTIs: [String] = item.itemProvider.registeredTypeIdentifiers
         var extensions: [String] = []
@@ -281,7 +284,6 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
         }
         
         for ext: String in extensions {
-            // `_allowedDropFileExtensions` should never be null because shouldAllowAllFiles() returns true if it is
             if self._allowedDropFileExtensions!.contains(ext) {
                 return true
             }
