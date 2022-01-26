@@ -422,7 +422,7 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
                 }
             }
             // No need to check if the file extension is allowed here because it was already checked in isAllowed()
-            else if isFile(item) && !item.itemProvider.canLoadObject(ofClass: NSURL.self) && !item.itemProvider.canLoadObject(ofClass: String.self){
+            else if isFile(item){
                 group.enter()
 
                 item.itemProvider.loadFileRepresentation(forTypeIdentifier: kUTTypeItem as String) { url, err in
