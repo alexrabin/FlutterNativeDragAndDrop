@@ -581,7 +581,7 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
     
     func saveImageURL(userImageURL: URL) -> String? {
         let filename : NSString = NSString(string: userImageURL.lastPathComponent)
-        let ext = userImageURL.pathExtension;
+        let ext = userImageURL.pathExtension.lowercased();
         let fileManager = FileManager()
         
         if let image = UIImage(contentsOfFile: userImageURL.path) {
