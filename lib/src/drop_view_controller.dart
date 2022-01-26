@@ -50,7 +50,7 @@ class DropViewController {
       } else if (d['url'] != null) {
         //add url
         var url = d['url'] as String;
-        var dropData = DropData(type: DropDataType.text, dropText: url);
+        var dropData = DropData(type: DropDataType.url, dropText: url);
         dropDataList.add(dropData);
       } else if (d['image'] != null) {
         //add image
