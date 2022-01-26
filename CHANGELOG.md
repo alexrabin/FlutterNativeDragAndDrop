@@ -1,6 +1,7 @@
 
 ## 0.0.3+4
 * Fixed an issue where images would register as the text or url data type instead of the image data type
+* Fixed an issue where text and urls would regsiter as the file data type when `DropDataType.file` was only specified
 ## 0.0.3+3
 * Fixed an issue where the flutter app would crash if `allowedDropFileExtensions` wasn't defined
 
