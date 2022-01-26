@@ -4,7 +4,7 @@ import MobileCoreServices
 import Foundation
 
 class MediaTypes {
-    static let IMAGE_IDS : [String] = [kUTTypeImage as String,kUTTypeJPEG as String, kUTTypePNG as String]
+    static let IMAGE_IDS : [String] = [kUTTypeImage as String,kUTTypeJPEG as String, kUTTypePNG as String, kUTTypeGIF as String]
     static let VIDEO_IDS : [String] = [kUTTypeMovie as String, kUTTypeMPEG as String, kUTTypeMPEG4 as String, kUTTypeVideo as String, kUTTypeQuickTimeMovie as String]
 }
 
@@ -154,6 +154,8 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
         if let receiveNonAllowedItems = flutterArgs["receiveNonAllowedItems"] as? Bool {
           self._receiveNonAllowedItems = receiveNonAllowedItems
         }
+        print("Allowed file exts: \(self._allowedDropFileExtensions ?? [])\n\nAllowed type ids: \(self._allowedTypeIdentifiers)")
+        
     }
     
     
@@ -301,7 +303,7 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
         
         // If no data types are specified, allow all types
         if self._allowedDropFileExtensions == nil {
-            return session.hasItemsConforming(toTypeIdentifiers: self._allowedTypeIdentifiers) || (hasFile(session) && shouldAllowAllFiles() )
+            return hasItemsConformingToAllowedTypeIdentifiers(session)
         }
         
         return hasAllowedExtensionCode(session) || hasItemsConformingToAllowedTypeIdentifiers(session)
@@ -357,24 +359,175 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
         }
         
         for item in session.items {
+            print("Registered types: \(item.itemProvider.registeredTypeIdentifiers)")
             // Check if item is allowed at all
             if !self._receiveNonAllowedItems && !isAllowed(item) {
                 continue
             }
             
             // Return item with the correct type
-            if item.itemProvider.canLoadObject(ofClass: String.self) && shouldAllowPlainText() {
+            if item.itemProvider.hasItemConformingToTypeIdentifier(kUTTypeAudio as String) && shouldAllowAudio() {
                 group.enter()
+                item.itemProvider.loadFileRepresentation(forTypeIdentifier: kUTTypeAudio as String) { url, err in
+                    if (err == nil && url != nil) {
+                        if let fileURL = self.saveFileURL(userURL: url!) {
+                            data.append(["audio": fileURL])
+                        }
+                    }
+                    group.leave()
+                }
+            }
+            else if hasItemsConformingToTypeIdentifiers(itemProvider: item.itemProvider, identifiers: MediaTypes.IMAGE_IDS) && shouldAllowImages() {
+                group.enter()
+                item.itemProvider.loadFileRepresentation(forTypeIdentifier: item.itemProvider.registeredTypeIdentifiers[0]) { url, err in
+                    if (err == nil && url != nil) {
+                        if let imageURL = self.saveImageURL(userImageURL: url!) {
+                            data.append(["image": imageURL])
+                        }
+                    }
+                    group.leave()
+                }
+            }
+            else if hasItemsConformingToTypeIdentifiers(itemProvider: item.itemProvider, identifiers: MediaTypes.VIDEO_IDS) && shouldAllowVideos() {
+                group.enter()
+                item.itemProvider.loadFileRepresentation(forTypeIdentifier: item.itemProvider.registeredTypeIdentifiers[0]) { url, err in
+                     if (err == nil && url != nil) {
+                        if let fileURL = self.saveFileURL(userURL: url!) {
+                            data.append(["video": fileURL])
+                        }
+                    }
+                    group.leave()
+                }
+            }
+            else if item.itemProvider.hasItemConformingToTypeIdentifier(kUTTypePDF as String) && shouldAllowPDFs() {
+                group.enter()
+                item.itemProvider.loadFileRepresentation(forTypeIdentifier: kUTTypePDF as String) { url, err in
+                    if (err == nil && url != nil) {
+                        if let fileURL = self.saveFileURL(userURL: url!) {
+                            data.append(["pdf": fileURL])
+                        }
+                    }
+                    group.leave()
+                }
+            }
+            // No need to check if the file extension is allowed here because it was already checked in isAllowed()
+            else if isFile(item){
+                let imageResult  = item.itemProvider.registeredTypeIdentifiers.filter () { MediaTypes.IMAGE_IDS.contains($0)}
+                let videoResult  = item.itemProvider.registeredTypeIdentifiers.filter () { MediaTypes.VIDEO_IDS.contains($0)}
 
-                _ = item.itemProvider.loadObject(ofClass: String.self) { reading, err in
-
-                    if (err == nil && reading != nil){
-                        
-                        if reading!.contains("data:image"){
+                print("Contains: \(imageResult)")
+                if (imageResult.count > 0){
+                    // Item is an image
+                    group.enter()
+                    item.itemProvider.loadFileRepresentation(forTypeIdentifier:imageResult[0]) { url, err in
+                        if (err == nil && url != nil) {
+                            if let fileURL = self.saveFileURL(userURL: url!) {
+                                data.append(["file": fileURL])
+                            }
+                        }
+                        group.leave()
+                    }
+                }
+                else if (videoResult.count > 0){
+                    // Item is a video
+                    group.enter()
+                    item.itemProvider.loadFileRepresentation(forTypeIdentifier:videoResult[0]) { url, err in
+                        if (err == nil && url != nil) {
+                            if let fileURL = self.saveFileURL(userURL: url!) {
+                                data.append(["file": fileURL])
+                            }
+                        }
+                        group.leave()
+                    }
+                }
+                else if item.itemProvider.canLoadObject(ofClass: NSURL.self) {
+                    // Item is a URL
+                    group.enter()
+                    item.itemProvider.loadObject(ofClass: NSURL.self) { reading, err in
+                        if (err == nil && reading != nil){
+                            data.append(["url": reading!.description])
+                        }
+                        group.leave()
+                    }
+                }
+                else if item.itemProvider.canLoadObject(ofClass: String.self) {
+                    // Item is a String
+                    group.enter()
+                    _ = item.itemProvider.loadObject(ofClass: String.self) { reading, err in
+    
+                        if (err == nil && reading != nil) {
                             
+                            if reading!.contains("data:image") {
+                                
+                                if let imageData = Data(base64Encoded: reading!), let savedURL = self.saveImage(imageData: imageData) {
+                                    data.append(["image": savedURL])
+
+                                }
+                            }
+                            else {
+                                let ids = item.itemProvider.registeredTypeIdentifiers
+                                var textData = ["text": reading!]
+                                if ids.contains(where: { s in
+                                    s.contains("javascript")
+                                }){
+                                    textData["fileType"] = "javascript"
+                                }
+                                else if ids.contains(where: { s in
+                                    s.contains("python")
+                                }){
+                                    textData["fileType"] = "python"
+                                }
+                                else if ids.contains(where: { s in
+                                    s.contains("objective-c")
+                                }){
+                                    textData["fileType"] = "objectivec"
+                                }
+                                else if ids.contains(where: { s in
+                                    s.contains("java")
+                                }){
+                                    textData["fileType"] = "java"
+                                }
+                                else if ids.contains(where: { s in
+                                    s.contains("swift")
+                                }){
+                                    textData["fileType"] = "swift"
+                                }
+                                data.append(textData)
+                            }
+                        }
+                        group.leave()
+                    }
+                }
+                else {
+                    group.enter()
+                    item.itemProvider.loadFileRepresentation(forTypeIdentifier: kUTTypeItem as String) { url, err in
+                        if (err == nil && url != nil) {
+                            if let fileURL = self.saveFileURL(userURL: url!) {
+                                data.append(["file": fileURL])
+                            }
+                        }
+                        group.leave()
+                    }
+                }
+            } // End of isFile() if statement
+            else if item.itemProvider.canLoadObject(ofClass: NSURL.self) {
+                group.enter()
+                item.itemProvider.loadObject(ofClass: NSURL.self) { reading, err in
+                    if (err == nil && reading != nil){
+                        data.append(["url": reading!.description])
+                    }
+                    group.leave()
+                }
+            }
+            else if item.itemProvider.canLoadObject(ofClass: String.self) {
+                group.enter()
+                _ = item.itemProvider.loadObject(ofClass: String.self) { reading, err in
+                    
+                    if (err == nil && reading != nil) {
+                        
+                        if reading!.contains("data:image") {
                             if let imageData = Data(base64Encoded: reading!), let savedURL = self.saveImage(imageData: imageData) {
                                 data.append(["image": savedURL])
-
                             }
                         }
                         else {
@@ -409,98 +562,11 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
                         }
                     }
                     group.leave()
-
-                }
-            }
-            else if item.itemProvider.canLoadObject(ofClass: NSURL.self) && shouldAllowUrls() {
-                group.enter()
-
-                item.itemProvider.loadObject(ofClass: NSURL.self) { reading, err in
-
-                    if (err == nil && reading != nil){
-                        data.append(["url": reading!.description])
-                        
-                    }
-                    group.leave()
-
-                }
-            }
-            else if item.itemProvider.hasItemConformingToTypeIdentifier(kUTTypeAudio as String) && shouldAllowAudio() {
-                group.enter()
-
-                item.itemProvider.loadFileRepresentation(forTypeIdentifier: kUTTypeAudio as String) { url, err in
-
-                    if (err == nil && url != nil){
-                        if let fileURL = self.saveFileURL(userURL: url!){
-                            data.append(["audio": fileURL])
-
-                        }
-                    }
-                    group.leave()
-
-                }
-            }
-            else if hasItemsConformingToTypeIdentifiers(itemProvider: item.itemProvider, identifiers: MediaTypes.IMAGE_IDS) && shouldAllowImages() {
-                group.enter()
-                item.itemProvider.loadFileRepresentation(forTypeIdentifier: item.itemProvider.registeredTypeIdentifiers[0]) { url, err in
-
-                    if (err == nil && url != nil){
-                        if let imageURL = self.saveImageURL(userImageURL: url!){
-                            data.append(["image": imageURL])
-
-                        }
-                    }
-                    group.leave()
-
-                }
-            }
-            else if hasItemsConformingToTypeIdentifiers(itemProvider: item.itemProvider, identifiers: MediaTypes.VIDEO_IDS) && shouldAllowVideos() {
-                group.enter()
-                item.itemProvider.loadFileRepresentation(forTypeIdentifier: item.itemProvider.registeredTypeIdentifiers[0]) { url, err in
-                     if (err == nil && url != nil){
-                        if let fileURL = self.saveFileURL(userURL: url!){
-                            data.append(["video": fileURL])
-
-                        }
-                    }
-                    group.leave()
-
-                }
-            }
-            else if item.itemProvider.hasItemConformingToTypeIdentifier(kUTTypePDF as String) && shouldAllowPDFs() {
-                group.enter()
-
-                item.itemProvider.loadFileRepresentation(forTypeIdentifier: kUTTypePDF as String) { url, err in
-                    if (err == nil && url != nil){
-                        if let fileURL = self.saveFileURL(userURL: url!){
-                            data.append(["pdf": fileURL])
-
-                        }
-                    }
-                    group.leave()
-
-                }
-            }
-            // No need to check if the file extension is allowed here because it was already checked in isAllowed()
-            else if isFile(item) {
-                group.enter()
-
-                item.itemProvider.loadFileRepresentation(forTypeIdentifier: kUTTypeItem as String) { url, err in
-
-                    if (err == nil && url != nil){
-                        if let fileURL = self.saveFileURL(userURL: url!){
-                            data.append(["file": fileURL])
-
-                        }
-                    }
-                    group.leave()
-
                 }
             }
         }
         group.notify(queue: .main) {
             self.sendDropData(data)
-            
         }
     }
 
@@ -515,12 +581,13 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
     
     func saveImageURL(userImageURL: URL) -> String? {
         let filename : NSString = NSString(string: userImageURL.lastPathComponent)
+        let ext = userImageURL.pathExtension.lowercased();
         let fileManager = FileManager()
         
         if let image = UIImage(contentsOfFile: userImageURL.path) {
             let data = image.jpegData(compressionQuality: 1)
             let fileName = NSString(string: filename.lastPathComponent).deletingPathExtension + UUID().uuidString
-            let tempFile = NSTemporaryDirectory().appending(fileName.appending(".jpeg"))
+            let tempFile = NSTemporaryDirectory().appending(fileName.appending(".\(ext)"))
             if fileManager.fileExists(atPath: tempFile){
                 guard ((try? fileManager.removeItem(atPath: tempFile)) != nil) else {
                     return nil
