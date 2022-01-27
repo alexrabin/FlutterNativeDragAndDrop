@@ -33,7 +33,7 @@ import io.flutter.plugin.platform.PlatformView;
 public class NativeDropView implements PlatformView, MethodChannel.MethodCallHandler, ActivityAware {
     @NonNull private final ImageView dragView;
     @Nullable private Activity activity;
-    private final MethodChannel channel;
+    @NonNull private final MethodChannel channel;
 
     @NonNull private final Context context;
 
