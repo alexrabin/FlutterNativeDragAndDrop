@@ -9,6 +9,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
+import android.view.DragAndDropPermissions;
 import android.view.DragEvent;
 import android.view.View;
 import android.widget.ImageView;
@@ -16,6 +17,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 import androidx.core.view.DragAndDropPermissionsCompat;
 
@@ -184,11 +186,15 @@ public class NativeDropView implements PlatformView, MethodChannel.MethodCallHan
             Uri uri = item.getUri();
             if (ContentResolver.SCHEME_CONTENT.equals(uri.getScheme())) {
                 // Accessing a "content" scheme Uri requires a permission grant.
-                DragAndDropPermissionsCompat dropPermissions = ActivityCompat
-                        .requestDragAndDropPermissions(activity, event);
+                DragAndDropPermissionsCompat dropPermissions = null;
+                if (activity != null) {
+                    dropPermissions = ActivityCompat
+                            .requestDragAndDropPermissions(activity, event);
+                }
 
                 if (dropPermissions == null) {
                     // Permission could not be obtained.
+                    Log.w("[NativeDropView.handleImageDrop]", "Permission could not be obtained to drop image");
                     return;
                 }
 
