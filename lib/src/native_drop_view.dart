@@ -106,7 +106,7 @@ class _NativeDropViewState extends State<NativeDropView> {
   /// Android 10, this mode might significantly reduce the frame throughput (FPS)
   /// of the Flutter UI. See [performance](https://docs.flutter.dev/development/platform-integration/platform-views?tab=android-platform-views-java-tab#performance)
   /// for more info.
-  /// 
+  ///
   /// Requires minSdkVersion 19
   Stack handleAndroidHybrid() {
     return Stack(
@@ -125,6 +125,7 @@ class _NativeDropViewState extends State<NativeDropView> {
               );
             },
             onCreatePlatformView: (PlatformViewCreationParams params) {
+              _onPlatformViewCreated(params.id);
               return PlatformViewsService.initSurfaceAndroidView(
                 id: params.id,
                 viewType: NativeDropView.viewType,
@@ -148,7 +149,7 @@ class _NativeDropViewState extends State<NativeDropView> {
   /// so it's not embedded within the Android Activity’s view hierachy. Certain
   /// platform interactions such as keyboard handling, and accessibility
   /// features might not work.
-  /// 
+  ///
   /// Requires minSdkVersion 20
   Stack handleAndroidVirtual() {
     return Stack(
@@ -157,6 +158,7 @@ class _NativeDropViewState extends State<NativeDropView> {
         IgnorePointer(
           child: AndroidView(
             viewType: NativeDropView.viewType,
+            onPlatformViewCreated: _onPlatformViewCreated,
             layoutDirection: TextDirection.ltr,
             creationParams: _creationParams,
             creationParamsCodec: NativeDropView._decoder,

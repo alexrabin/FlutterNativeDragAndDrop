@@ -2,6 +2,7 @@ package com.rabinapps.native_drag_n_drop;
 
 import static com.rabinapps.native_drag_n_drop.Utils.isMap;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 
 import java.util.HashMap;
@@ -36,7 +37,8 @@ public class NativeDropViewFactory extends PlatformViewFactory {
             Log.w("NativeDropViewFactory", "Could not load arguments. Arguments was not of type Map<String, Object>");
         }
 
-        final String channelName = String.format("DropView%s", viewId);
+        @SuppressLint("DefaultLocale") final String channelName = String.format("DropView/%d", viewId);
+        Log.i("NativeDropViewFactory", String.format("%s created", channelName));
         /// The MethodChannel that will the communication between Flutter and native Android
         MethodChannel channel = new MethodChannel(messenger, channelName);
 
