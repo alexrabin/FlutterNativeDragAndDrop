@@ -1,5 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:native_drag_n_drop/src/drop_data.dart';
 import 'package:native_drag_n_drop/src/drop_view_controller.dart';
@@ -50,6 +54,8 @@ class NativeDropView extends StatefulWidget {
   /// It is recommended to keep this enabled, and instead give feedback to the user when they have dropped an item that is not allowed.
   final bool receiveNonAllowedItems;
 
+  static const viewType = 'DropPlatformView';
+
   /// A widget that adds drag and drop functionality
   ///
   /// Must set allowedDropDataTypes or allowedDropFileExtensions
@@ -82,50 +88,126 @@ class _NativeDropViewState extends State<NativeDropView> {
 
   @override
   Widget build(BuildContext context) {
-    if (defaultTargetPlatform == TargetPlatform.iOS) {
-      return Stack(
-        children: [
-          widget.child,
-          IgnorePointer(
-            child: UiKitView(
-              viewType: 'DropPlatformView',
-              onPlatformViewCreated: _onPlatformViewCreated,
-              creationParams: {
-                "allowedTotal": widget.allowedTotal,
-                "backgroundColor": widget.backgroundColor != null
-                    ? [
-                        widget.backgroundColor!.red,
-                        widget.backgroundColor!.green,
-                        widget.backgroundColor!.blue,
-                        widget.backgroundColor!.alpha
-                      ]
-                    : [],
-                "borderColor": widget.borderColor != null
-                    ? [
-                        widget.borderColor!.red,
-                        widget.borderColor!.green,
-                        widget.borderColor!.blue,
-                        widget.borderColor!.alpha
-                      ]
-                    : [],
-                "borderWidth": widget.borderWidth ?? 0,
-                "allowedDropDataTypes": widget.allowedDropDataTypes
-                    ?.map((dropDataType) => dropDataType.name)
-                    .toList(),
-                "allowedDropFileExtensions": widget.allowedDropFileExtensions
-                    ?.map((fileExt) => fileExt.toLowerCase())
-                    .toList(),
-                "receiveNonAllowedItems": widget.receiveNonAllowedItems,
-              },
-              creationParamsCodec: NativeDropView._decoder,
-            ),
-          ),
-        ],
-      );
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.android:
+        // TODO: Switch handleAndroidVirtual() for better performance below Android 10, if it works with drag and drop
+        return handleAndroidHybrid();
+      case TargetPlatform.iOS:
+        return handleIOS();
+      case TargetPlatform.linux:
+      case TargetPlatform.macOS:
+      case TargetPlatform.windows:
+      case TargetPlatform.fuchsia:
+      default:
+        return Container(child: widget.child);
     }
-    return Container(
-      child: widget.child,
+  }
+
+  /// Hybrid composition appends the native `android.view.View` to the view hierarchy.
+  /// Therefore, keyboard handling, and accessibility work out of the box. Prior to
+  /// Android 10, this mode might significantly reduce the frame throughput (FPS)
+  /// of the Flutter UI. See [performance](https://docs.flutter.dev/development/platform-integration/platform-views?tab=android-platform-views-java-tab#performance)
+  /// for more info.
+  Stack handleAndroidHybrid() {
+    return Stack(
+      children: [
+        widget.child,
+        IgnorePointer(
+          child: PlatformViewLink(
+            viewType: NativeDropView.viewType,
+            surfaceFactory:
+                (BuildContext context, PlatformViewController controller) {
+              return AndroidViewSurface(
+                controller: controller as AndroidViewController,
+                gestureRecognizers: const <
+                    Factory<OneSequenceGestureRecognizer>>{},
+                hitTestBehavior: PlatformViewHitTestBehavior.opaque,
+              );
+            },
+            onCreatePlatformView: (PlatformViewCreationParams params) {
+              return PlatformViewsService.initSurfaceAndroidView(
+                id: params.id,
+                viewType: NativeDropView.viewType,
+                layoutDirection: TextDirection.ltr,
+                creationParams: _creationParams,
+                creationParamsCodec: NativeDropView._decoder,
+                onFocus: () {
+                  params.onFocusChanged(true);
+                },
+              )
+                ..addOnPlatformViewCreatedListener(params.onPlatformViewCreated)
+                ..create();
+            },
+          ),
+        ),
+      ],
     );
+  }
+
+  /// Virtual displays renders the `android.view.View` instance to a texture,
+  /// so it's not embedded within the Android Activity’s view hierachy. Certain
+  /// platform interactions such as keyboard handling, and accessibility
+  /// features might not work.
+  Stack handleAndroidVirtual() {
+    return Stack(
+      children: [
+        widget.child,
+        IgnorePointer(
+          child: AndroidView(
+            viewType: NativeDropView.viewType,
+            layoutDirection: TextDirection.ltr,
+            creationParams: _creationParams,
+            creationParamsCodec: NativeDropView._decoder,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Stack handleIOS() {
+    return Stack(
+      children: [
+        widget.child,
+        IgnorePointer(
+          child: UiKitView(
+            viewType: NativeDropView.viewType,
+            onPlatformViewCreated: _onPlatformViewCreated,
+            creationParams: _creationParams,
+            creationParamsCodec: NativeDropView._decoder,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Map<String, Object?> get _creationParams {
+    return {
+      "allowedTotal": widget.allowedTotal,
+      "backgroundColor": widget.backgroundColor != null
+          ? [
+              widget.backgroundColor!.red,
+              widget.backgroundColor!.green,
+              widget.backgroundColor!.blue,
+              widget.backgroundColor!.alpha
+            ]
+          : [],
+      "borderColor": widget.borderColor != null
+          ? [
+              widget.borderColor!.red,
+              widget.borderColor!.green,
+              widget.borderColor!.blue,
+              widget.borderColor!.alpha
+            ]
+          : [],
+      "borderWidth": widget.borderWidth ?? 0,
+      "allowedDropDataTypes": widget.allowedDropDataTypes
+          ?.map((dropDataType) => dropDataType.name)
+          .toList(),
+      "allowedDropFileExtensions": widget.allowedDropFileExtensions
+          ?.map((fileExt) => fileExt.toLowerCase())
+          .toList(),
+      "receiveNonAllowedItems": widget.receiveNonAllowedItems,
+    };
   }
 
   void _onPlatformViewCreated(int id) {
