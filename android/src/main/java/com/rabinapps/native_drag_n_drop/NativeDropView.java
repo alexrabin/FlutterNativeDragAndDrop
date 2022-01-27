@@ -202,6 +202,7 @@ public class NativeDropView implements PlatformView, MethodChannel.MethodCallHan
                 final Map<String, Object> urlMap = new HashMap<String, Object>();
                 urlMap.put("image", uri.getPath());
                 data.add(urlMap);
+                sendDropData(data);
             } else {
                 // Other schemes (such as "android.resource") do not require a permission grant.
                 final ArrayList<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
