@@ -196,7 +196,6 @@ public class NativeDropView implements PlatformView, MethodChannel.MethodCallHan
                 final Map<String, Object> urlMap = new HashMap<String, Object>();
                 urlMap.put("image", uri.getPath());
                 data.add(urlMap);
-//                sendDropData(String.format("[{\"image\": \"%s\"}]", uri.getPath()));
             } else {
                 // Other schemes (such as "android.resource") do not require a permission grant.
                 final ArrayList<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
@@ -204,7 +203,6 @@ public class NativeDropView implements PlatformView, MethodChannel.MethodCallHan
                 urlMap.put("image", uri.getPath());
                 data.add(urlMap);
                 sendDropData(data);
-//                sendDropData(String.format("[{\"image\": \"%s\"}]", uri.getPath()));
             }
         }
     }
@@ -242,6 +240,7 @@ public class NativeDropView implements PlatformView, MethodChannel.MethodCallHan
     @Override
     public void onAttachedToActivity(@NonNull ActivityPluginBinding binding) {
         activity = binding.getActivity();
+        dragView.setOnDragListener(viewDragListener());
     }
 
     @Override
