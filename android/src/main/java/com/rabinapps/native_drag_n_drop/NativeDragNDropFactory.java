@@ -22,7 +22,7 @@ public class NativeDragNDropFactory extends PlatformViewFactory {
     }
 
     @Override
-    public PlatformView create(@NonNull Context context, int viewId, @Nullable Object args) {
+    public PlatformView create(@NonNull Context context, @NonNull int viewId, @Nullable Object args) {
         @SuppressWarnings("unchecked") final Map<String, Object> creationParams = (Map<String, Object>) args;
         final String channelName = "DropView${viewId}";
         MethodChannel channel = new MethodChannel(messenger, channelName);

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.view.View;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.util.Map;
 
@@ -18,7 +19,7 @@ public class NativeDragNDrop implements PlatformView, MethodChannel.MethodCallHa
     Map<String, Object> creationParams;
     MethodChannel channel;
 
-    public NativeDragNDrop(Context context, int viewId, Map<String, Object> creationParams, MethodChannel channel) {
+    public NativeDragNDrop(@NonNull Context context, int viewId, @Nullable Map<String, Object> creationParams, @NonNull MethodChannel channel) {
         // init data from flutter here
         this.context = context;
         this.viewId = viewId;
