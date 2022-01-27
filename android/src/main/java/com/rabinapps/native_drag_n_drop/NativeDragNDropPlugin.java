@@ -9,7 +9,7 @@ public class NativeDragNDropPlugin implements FlutterPlugin {
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
     NativeDropViewFactory factory = new NativeDropViewFactory(flutterPluginBinding);
-    flutterPluginBinding.getPlatformViewRegistry().registerViewFactory("flutter_native_text_input", factory);
+    flutterPluginBinding.getPlatformViewRegistry().registerViewFactory("native_drag_n_drop", factory);
   }
 
   @Override
