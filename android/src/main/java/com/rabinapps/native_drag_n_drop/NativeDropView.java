@@ -12,14 +12,14 @@ import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.platform.PlatformView;
 
-public class NativeDragNDrop implements PlatformView, MethodChannel.MethodCallHandler {
+public class NativeDropView implements PlatformView, MethodChannel.MethodCallHandler {
     View _view;
     Context context;
     int viewId;
     Map<String, Object> creationParams;
     MethodChannel channel;
 
-    public NativeDragNDrop(@NonNull Context context, int viewId, @Nullable Map<String, Object> creationParams, @NonNull MethodChannel channel) {
+    public NativeDropView(@NonNull Context context, int viewId, @Nullable Map<String, Object> creationParams, @NonNull MethodChannel channel) {
         // init data from flutter here
         this.context = context;
         this.viewId = viewId;

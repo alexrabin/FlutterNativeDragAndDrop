@@ -11,22 +11,21 @@ import io.flutter.plugin.common.StandardMessageCodec;
 import io.flutter.plugin.platform.PlatformView;
 import io.flutter.plugin.platform.PlatformViewFactory;
 
-public class NativeDragNDropFactory extends PlatformViewFactory {
-
-    private NativeDragNDrop nativeDragNDrop;
+public class NativeDropViewFactory extends PlatformViewFactory {
     private final BinaryMessenger messenger;
 
-    NativeDragNDropFactory(@NonNull FlutterPlugin.FlutterPluginBinding flutterPluginBinding) {
+    NativeDropViewFactory(@NonNull FlutterPlugin.FlutterPluginBinding flutterPluginBinding) {
         super(StandardMessageCodec.INSTANCE);
         messenger = flutterPluginBinding.getBinaryMessenger();
     }
 
     @Override
-    public PlatformView create(@NonNull Context context, @NonNull int viewId, @Nullable Object args) {
+    public PlatformView create(@NonNull Context context, int viewId, @Nullable Object args) {
         @SuppressWarnings("unchecked") final Map<String, Object> creationParams = (Map<String, Object>) args;
         final String channelName = "DropView${viewId}";
+        /// The MethodChannel that will the communication between Flutter and native Android
         MethodChannel channel = new MethodChannel(messenger, channelName);
 
-        return new NativeDragNDrop(context, viewId, creationParams, channel);
+        return new NativeDropView(context, viewId, creationParams, channel);
     }
 }
