@@ -13,18 +13,14 @@ import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.platform.PlatformView;
 
 public class NativeDropView implements PlatformView, MethodChannel.MethodCallHandler {
-    View _view;
-    Context context;
-    int viewId;
-    Map<String, Object> creationParams;
-    MethodChannel channel;
+    @NonNull private final View view;
+
+    @NonNull private Context context;
 
     public NativeDropView(@NonNull Context context, int viewId, @Nullable Map<String, Object> creationParams, @NonNull MethodChannel channel) {
         // init data from flutter here
         this.context = context;
-        this.viewId = viewId;
-        this.creationParams = creationParams;
-        this.channel = channel;
+        this.view = new View(context);
     }
 
     @Override
@@ -34,7 +30,7 @@ public class NativeDropView implements PlatformView, MethodChannel.MethodCallHan
 
     @Override
     public View getView() {
-        return _view;
+        return view;
     }
 
     @Override
