@@ -6,11 +6,9 @@ import io.flutter.embedding.engine.plugins.FlutterPlugin;
 
 /** NativeDragNDropPlugin */
 public class NativeDragNDropPlugin implements FlutterPlugin {
-  private NativeDropViewFactory factory;
-
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
-    factory = new NativeDropViewFactory(flutterPluginBinding);
+    NativeDropViewFactory factory = new NativeDropViewFactory(flutterPluginBinding);
     flutterPluginBinding.getPlatformViewRegistry().registerViewFactory("flutter_native_text_input", factory);
   }
 
