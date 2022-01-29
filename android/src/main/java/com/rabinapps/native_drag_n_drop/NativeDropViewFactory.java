@@ -39,11 +39,11 @@ public class NativeDropViewFactory extends PlatformViewFactory {
             creationParams = temp;
         } else {
             creationParams = new HashMap<>();
-            Log.w("NativeDropViewFactory", "Could not load arguments. Arguments was not of type Map<String, Object>");
+            Log.w("[DART/NATIVE]", "NativeDropViewFactory.create: Could not load arguments. Arguments was not of type Map<String, Object>");
         }
 
         @SuppressLint("DefaultLocale") final String channelName = String.format("DropView/%d", viewId);
-        Log.i("NativeDropViewFactory", String.format("%s created", channelName));
+        Log.d("[DART/NATIVE]", String.format("NativeDropViewFactory.create: %s created", channelName));
         /// The MethodChannel that will the communication between Flutter and native Android
         MethodChannel channel = new MethodChannel(messenger, channelName);
 

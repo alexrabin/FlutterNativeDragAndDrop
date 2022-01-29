@@ -15,21 +15,21 @@ public class NativeDragNDropPlugin implements FlutterPlugin, ActivityAware {
 
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
-    Log.d("DART/NATIVE", "onAttachedToEngine");
+    Log.d("[DART/NATIVE]", "NativeDragNDropPlugin.onAttachedToEngine");
     this.flutterPluginBinding = flutterPluginBinding;
   }
 
   @Override
   public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
-    Log.d("DART/NATIVE", "onDetachedFromEngine");
+    Log.d("[DART/NATIVE]", "NativeDragNDropPlugin.onDetachedFromEngine");
     this.flutterPluginBinding = binding;
   }
 
   @Override
   public void onAttachedToActivity(@NonNull ActivityPluginBinding activityPluginBinding) {
-    Log.d("DART/NATIVE", "onAttachedToActivity");
+    Log.d("[DART/NATIVE]", "NativeDragNDropPlugin.onAttachedToActivity");
     if (flutterPluginBinding == null) {
-      Log.d("DART/NATIVE", "onAttachedToActivity: flutterPluginBinding was null so unable to create factory");
+      Log.d("[DART/NATIVE]", "NativeDragNDropPlugin.onAttachedToActivity: flutterPluginBinding was null so unable to create factory");
       return;
     }
 
@@ -39,16 +39,16 @@ public class NativeDragNDropPlugin implements FlutterPlugin, ActivityAware {
 
   @Override
   public void onDetachedFromActivityForConfigChanges() {
-    Log.d("DART/NATIVE", "onDetachedFromActivityForConfigChanges");
+    Log.d("[DART/NATIVE]", "NativeDragNDropPlugin.onDetachedFromActivityForConfigChanges");
   }
 
   @Override
   public void onReattachedToActivityForConfigChanges(@NonNull ActivityPluginBinding binding) {
-    Log.d("DART/NATIVE", "onReattachedToActivityForConfigChanges");
+    Log.d("[DART/NATIVE]", "NativeDragNDropPlugin.onReattachedToActivityForConfigChanges");
   }
 
   @Override
   public void onDetachedFromActivity() {
-    Log.d("DART/NATIVE", "onDetachedFromActivity");
+    Log.d("[DART/NATIVE]", "NativeDragNDropPlugin.onDetachedFromActivity");
   }
 }

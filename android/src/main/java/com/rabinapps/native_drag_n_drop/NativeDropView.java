@@ -103,7 +103,7 @@ public class NativeDropView implements PlatformView {
                     return true;
                 // An unknown action type was received.
                 default:
-                    Log.e("NativeDropView","Unknown action type received by View.OnDragListener.");
+                    Log.w("[DART/NATIVE]","NativeDropView.viewDragListener: Unknown action type received by View.OnDragListener.");
                     break;
             }
             return false;
@@ -151,7 +151,7 @@ public class NativeDropView implements PlatformView {
 
                 if (dropPermissions == null) {
                     // Permission could not be obtained.
-                    Log.w("[NativeDropView.handleImageDrop]", "Permission could not be obtained to drop image");
+                    Log.w("[DART/NATIVE]", "NativeDropView.handleImageDrop: Permission could not be obtained to drop image");
                     showToast("Permission could not be obtained to drop image");
                     // Send empty list to end loading state
                     sendDropData(new ArrayList<Map<String, Object>>());
@@ -160,7 +160,7 @@ public class NativeDropView implements PlatformView {
 
                 final ArrayList<Map<String, Object>> data = new ArrayList<>();
                 final Map<String, Object> urlMap = new HashMap<>();
-                urlMap.put("image", uri.getPath());
+                urlMap.put("image", uri.toString());
                 data.add(urlMap);
                 sendDropData(data);
             } else {
@@ -191,7 +191,7 @@ public class NativeDropView implements PlatformView {
                     @SuppressWarnings("unchecked") final Map<String, Object> flutterArgs = (Map<String, Object>) call.arguments;
 
                 } else {
-                    Log.w("NativeDropView: updateParams method", "Could not load arguments. Arguments was not of type Map<String, Object>");
+                    Log.w("[DART/NATIVE]", "NativeDropView.channelMethodCallHandler's updateParams: Could not load arguments. Arguments was not of type Map<String, Object>");
                 }
             }
         };
