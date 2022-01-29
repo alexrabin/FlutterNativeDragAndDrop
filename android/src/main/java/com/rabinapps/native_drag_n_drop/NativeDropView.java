@@ -43,6 +43,18 @@ public class NativeDropView implements PlatformView, MethodChannel.MethodCallHan
         this.channel = channel;
 
         dragView.setOnDragListener(viewDragListener());
+
+        channel.setMethodCallHandler((call, result) -> {
+            if ("updateParams".equals(call.method)) {
+
+                if (isMap(call.arguments)) {
+                    @SuppressWarnings("unchecked") final Map<String, Object> flutterArgs = (Map<String, Object>) call.arguments;
+
+                } else {
+                    Log.w("NativeDropView: updateParams method", "Could not load arguments. Arguments was not of type Map<String, Object>");
+                }
+            }
+        });
     }
 
     // Some of the below code was taken from [Microsoft's Drag and Drop example](https://github.com/microsoft/surface-duo-sdk-samples/blob/main/DragAndDrop/src/main/java/com/microsoft/device/display/samples/draganddrop/fragment/DropTargetFragment.java)
@@ -219,15 +231,6 @@ public class NativeDropView implements PlatformView, MethodChannel.MethodCallHan
 
     @Override
     public void onMethodCall(@NonNull MethodCall call, @NonNull MethodChannel.Result result) {
-        if ("updateParams".equals(call.method)) {
-
-            if (isMap(call.arguments)) {
-                @SuppressWarnings("unchecked") final Map<String, Object> flutterArgs = (Map<String, Object>) call.arguments;
-
-            } else {
-                Log.w("NativeDropView: updateParams method", "Could not load arguments. Arguments was not of type Map<String, Object>");
-            }
-        }
     }
 
     public void sendDropData(@Nullable Object data){
