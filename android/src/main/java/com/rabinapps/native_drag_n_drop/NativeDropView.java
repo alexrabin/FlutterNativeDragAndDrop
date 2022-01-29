@@ -1,6 +1,7 @@
 package com.rabinapps.native_drag_n_drop;
 
 import static com.rabinapps.native_drag_n_drop.Utils.isMap;
+import static com.rabinapps.native_drag_n_drop.Utils.getPathFromUri;
 
 import android.app.Activity;
 import android.content.ClipData;
@@ -160,7 +161,8 @@ public class NativeDropView implements PlatformView {
 
                 final ArrayList<Map<String, Object>> data = new ArrayList<>();
                 final Map<String, Object> urlMap = new HashMap<>();
-                urlMap.put("image", uri.getPath());
+                String path = getPathFromUri(activity, uri);
+                urlMap.put("image", path);
                 data.add(urlMap);
                 sendDropData(data);
             } else {
