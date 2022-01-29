@@ -3,6 +3,7 @@ package com.rabinapps.native_drag_n_drop;
 import static com.rabinapps.native_drag_n_drop.Utils.isMap;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 
 import java.util.HashMap;
@@ -12,6 +13,7 @@ import androidx.annotation.NonNull;
 
 import io.flutter.Log;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
+import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
 import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.StandardMessageCodec;
@@ -20,10 +22,13 @@ import io.flutter.plugin.platform.PlatformViewFactory;
 
 public class NativeDropViewFactory extends PlatformViewFactory {
     private final BinaryMessenger messenger;
+    private final Activity activity;
 
-    NativeDropViewFactory(@NonNull FlutterPlugin.FlutterPluginBinding flutterPluginBinding) {
+    NativeDropViewFactory(@NonNull FlutterPlugin.FlutterPluginBinding flutterPluginBinding,
+                          @NonNull ActivityPluginBinding activityPluginBinding) {
         super(StandardMessageCodec.INSTANCE);
         messenger = flutterPluginBinding.getBinaryMessenger();
+        activity = activityPluginBinding.getActivity();
     }
 
     @Override
@@ -42,6 +47,6 @@ public class NativeDropViewFactory extends PlatformViewFactory {
         /// The MethodChannel that will the communication between Flutter and native Android
         MethodChannel channel = new MethodChannel(messenger, channelName);
 
-        return new NativeDropView(context, viewId, creationParams, channel);
+        return new NativeDropView(context, viewId, creationParams, channel, activity);
     }
 }

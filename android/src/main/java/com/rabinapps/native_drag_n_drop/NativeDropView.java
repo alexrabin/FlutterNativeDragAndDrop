@@ -27,18 +27,24 @@ import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.platform.PlatformView;
 
-public class NativeDropView implements PlatformView, ActivityAware {
+public class NativeDropView implements PlatformView {
     @NonNull private final View dragView;
-    @Nullable private Activity activity;
+    @NonNull private final Activity activity;
     @NonNull private final MethodChannel channel;
     @NonNull private final Context context;
 
-    public NativeDropView(@NonNull Context context, int viewId, @NonNull Map<String, Object> creationParams, @NonNull MethodChannel channel) {
+    public NativeDropView(@NonNull Context context,
+                          int viewId,
+                          @NonNull Map<String, Object> creationParams,
+                          @NonNull MethodChannel channel,
+                          @NonNull Activity activity) {
         // init data from flutter here
         this.context = context;
         this.dragView = new View(context);
         dragView.setOnDragListener(viewDragListener());
         this.channel = channel;
+        this.activity = activity;
+        channel.setMethodCallHandler(channelMethodCallHandler());
     }
 
     // Some of the below code was taken from [Microsoft's Drag and Drop example](https://github.com/microsoft/surface-duo-sdk-samples/blob/main/DragAndDrop/src/main/java/com/microsoft/device/display/samples/draganddrop/fragment/DropTargetFragment.java)
@@ -110,41 +116,6 @@ public class NativeDropView implements PlatformView, ActivityAware {
         Toast.makeText(context, message, Toast.LENGTH_LONG).show();
     }
 
-//    private void setBackgroundColor(String mimeType) {
-//        ColorFilter colorFilter = new PorterDuffColorFilter(Color.GRAY,
-//                PorterDuff.Mode.SRC_IN);
-//        if (isImage(mimeType)) {
-//            imageHintContainer.getBackground().setColorFilter(colorFilter);
-//            imageHintContainer.setElevation(4);
-//            imageHintContainer.invalidate();
-//        } else if (isText(mimeType)) {
-//            textHintContainer.getBackground().setColorFilter(colorFilter);
-//            textHintContainer.setElevation(4);
-//            textHintContainer.invalidate();
-//        }
-//    }
-//
-//    private void clearBackgroundColor(String mimeType) {
-//        if (isImage(mimeType)) {
-//            imageHintContainer.getBackground().clearColorFilter();
-//            imageHintContainer.setElevation(0);
-//            imageHintContainer.invalidate();
-//        } else if (isText(mimeType)) {
-//            textHintContainer.getBackground().clearColorFilter();
-//            textHintContainer.setElevation(0);
-//            textHintContainer.invalidate();
-//        }
-//    }
-//
-//    private void clearBackgroundColor() {
-//        imageHintContainer.getBackground().clearColorFilter();
-//        imageHintContainer.setElevation(0);
-//        imageHintContainer.invalidate();
-//        textHintContainer.getBackground().clearColorFilter();
-//        textHintContainer.setElevation(0);
-//        textHintContainer.invalidate();
-//    }
-
     private boolean isImage(String mime) {
         return mime.startsWith("image/");
     }
@@ -177,14 +148,6 @@ public class NativeDropView implements PlatformView, ActivityAware {
             if (ContentResolver.SCHEME_CONTENT.equals(uri.getScheme())) {
                 // Accessing a "content" scheme Uri requires a permission grant.
                 DragAndDropPermissionsCompat dropPermissions;
-                if (activity == null) {
-                    Log.w("[NativeDropView.handleImageDrop]", "Activity was null, could not request permission to drop image");
-                    showToast("Activity was null, could not request permission to drop image");
-                    // Send empty list to end loading state
-                    sendDropData(new ArrayList<Map<String, Object>>());
-                    return;
-                }
-
                 dropPermissions = ActivityCompat
                         .requestDragAndDropPermissions(activity, event);
 
@@ -244,39 +207,4 @@ public class NativeDropView implements PlatformView, ActivityAware {
 
     @Override
     public void dispose() {}
-
-    @Override
-    public void onAttachedToActivity(@NonNull ActivityPluginBinding binding) {
-        Log.d("DART/NATIVE", "onAttachedToActivity");
-        activity = binding.getActivity();
-        dragView.setOnDragListener(viewDragListener());
-
-        // Channel method call handler must be set here, if it is set in the constructor onAttachedToActivity will never be called
-        // https://stackoverflow.com/questions/59887901/get-activity-reference-in-flutter-plugin/59912225#59912225
-        channel.setMethodCallHandler(channelMethodCallHandler());
-    }
-
-    @Override
-    public void onDetachedFromActivityForConfigChanges() {
-        Log.d("DART/NATIVE", "onDetachedFromActivityForConfigChanges");
-        activity = null;
-        channel.setMethodCallHandler(null);
-        dragView.setOnDragListener(null);
-    }
-
-    @Override
-    public void onReattachedToActivityForConfigChanges(@NonNull ActivityPluginBinding binding) {
-        Log.d("DART/NATIVE", "onReattachedToActivityForConfigChanges");
-        activity = binding.getActivity();
-        channel.setMethodCallHandler(channelMethodCallHandler());
-        dragView.setOnDragListener(viewDragListener());
-    }
-
-    @Override
-    public void onDetachedFromActivity() {
-        Log.d("DART/NATIVE", "onDetachedFromActivity");
-        dragView.setOnDragListener(null);
-        channel.setMethodCallHandler(null);
-        activity = null;
-    }
 }
