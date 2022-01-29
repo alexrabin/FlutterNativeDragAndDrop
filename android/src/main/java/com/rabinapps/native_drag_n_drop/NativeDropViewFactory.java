@@ -33,7 +33,7 @@ public class NativeDropViewFactory extends PlatformViewFactory {
             @SuppressWarnings("unchecked") final Map<String, Object> temp = (Map<String, Object>) args;
             creationParams = temp;
         } else {
-            creationParams = new HashMap<String, Object>();
+            creationParams = new HashMap<>();
             Log.w("NativeDropViewFactory", "Could not load arguments. Arguments was not of type Map<String, Object>");
         }
 

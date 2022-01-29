@@ -170,8 +170,8 @@ public class NativeDropView implements PlatformView, MethodChannel.MethodCallHan
 
         // Handle if drop from outside app, vw is null if drop from another app
         if (vw == null) {
-            final ArrayList<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
-            final Map<String, Object> textMap = new HashMap<String, Object>();
+            final ArrayList<Map<String, Object>> data = new ArrayList<>();
+            final Map<String, Object> textMap = new HashMap<>();
             textMap.put("text", dragData);
             data.add(textMap);
             sendDropData(data);
@@ -200,15 +200,15 @@ public class NativeDropView implements PlatformView, MethodChannel.MethodCallHan
                     return;
                 }
 
-                final ArrayList<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
-                final Map<String, Object> urlMap = new HashMap<String, Object>();
+                final ArrayList<Map<String, Object>> data = new ArrayList<>();
+                final Map<String, Object> urlMap = new HashMap<>();
                 urlMap.put("image", uri.getPath());
                 data.add(urlMap);
                 sendDropData(data);
             } else {
                 // Other schemes (such as "android.resource") do not require a permission grant.
-                final ArrayList<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
-                final Map<String, Object> urlMap = new HashMap<String, Object>();
+                final ArrayList<Map<String, Object>> data = new ArrayList<>();
+                final Map<String, Object> urlMap = new HashMap<>();
                 urlMap.put("image", uri.getPath());
                 data.add(urlMap);
                 sendDropData(data);
