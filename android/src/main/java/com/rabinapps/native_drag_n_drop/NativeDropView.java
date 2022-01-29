@@ -160,7 +160,7 @@ public class NativeDropView implements PlatformView {
 
                 final ArrayList<Map<String, Object>> data = new ArrayList<>();
                 final Map<String, Object> urlMap = new HashMap<>();
-                urlMap.put("image", uri.toString());
+                urlMap.put("image", uri.getPath());
                 data.add(urlMap);
                 sendDropData(data);
             } else {
