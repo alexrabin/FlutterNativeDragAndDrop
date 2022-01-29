@@ -44,7 +44,7 @@ public class NativeDropView implements PlatformView, MethodChannel.MethodCallHan
 
         dragView.setOnDragListener(viewDragListener());
 
-        channel.setMethodCallHandler((call, result) -> {
+        this.channel.setMethodCallHandler((call, result) -> {
             if ("updateParams".equals(call.method)) {
 
                 if (isMap(call.arguments)) {
