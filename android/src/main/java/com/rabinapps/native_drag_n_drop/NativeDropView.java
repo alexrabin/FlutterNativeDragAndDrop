@@ -195,6 +195,8 @@ public class NativeDropView implements PlatformView, MethodChannel.MethodCallHan
                 if (dropPermissions == null) {
                     // Permission could not be obtained.
                     Log.w("[NativeDropView.handleImageDrop]", "Permission could not be obtained to drop image");
+                    // Send empty list to end loading state
+                    sendDropData(new ArrayList<Map<String, Object>>());
                     return;
                 }
 
