@@ -22,8 +22,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.flutter.Log;
-import io.flutter.embedding.engine.plugins.activity.ActivityAware;
-import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.platform.PlatformView;
 
