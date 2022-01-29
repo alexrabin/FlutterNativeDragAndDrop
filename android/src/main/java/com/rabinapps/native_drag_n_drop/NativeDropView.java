@@ -6,18 +6,14 @@ import android.app.Activity;
 import android.content.ClipData;
 import android.content.ContentResolver;
 import android.content.Context;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
-import android.view.DragAndDropPermissions;
 import android.view.DragEvent;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 import androidx.core.view.DragAndDropPermissionsCompat;
 
@@ -33,7 +29,7 @@ import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.platform.PlatformView;
 
 public class NativeDropView implements PlatformView, MethodChannel.MethodCallHandler, ActivityAware {
-    @NonNull private final ImageView dragView;
+    @NonNull private final View dragView;
     @Nullable private Activity activity;
     @NonNull private final MethodChannel channel;
 
@@ -42,9 +38,7 @@ public class NativeDropView implements PlatformView, MethodChannel.MethodCallHan
     public NativeDropView(@NonNull Context context, int viewId, @NonNull Map<String, Object> creationParams, @NonNull MethodChannel channel) {
         // init data from flutter here
         this.context = context;
-        this.dragView = new ImageView(context);
-        dragView.setMaxWidth(500);
-        dragView.setMaxHeight(500);
+        this.dragView = new View(context);
 
         this.channel = channel;
 
@@ -186,15 +180,22 @@ public class NativeDropView implements PlatformView, MethodChannel.MethodCallHan
             Uri uri = item.getUri();
             if (ContentResolver.SCHEME_CONTENT.equals(uri.getScheme())) {
                 // Accessing a "content" scheme Uri requires a permission grant.
-                DragAndDropPermissionsCompat dropPermissions = null;
-                if (activity != null) {
-                    dropPermissions = ActivityCompat
-                            .requestDragAndDropPermissions(activity, event);
+                DragAndDropPermissionsCompat dropPermissions;
+                if (activity == null) {
+                    Log.w("[NativeDropView.handleImageDrop]", "Activity was null, could not request permission to drop image");
+                    showToast("Activity was null, could not request permission to drop image");
+                    // Send empty list to end loading state
+                    sendDropData(new ArrayList<Map<String, Object>>());
+                    return;
                 }
+
+                dropPermissions = ActivityCompat
+                        .requestDragAndDropPermissions(activity, event);
 
                 if (dropPermissions == null) {
                     // Permission could not be obtained.
                     Log.w("[NativeDropView.handleImageDrop]", "Permission could not be obtained to drop image");
+                    showToast("Permission could not be obtained to drop image");
                     // Send empty list to end loading state
                     sendDropData(new ArrayList<Map<String, Object>>());
                     return;
