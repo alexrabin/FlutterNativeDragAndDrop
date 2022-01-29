@@ -41,9 +41,9 @@ public class Utils {
         OutputStream outputStream = null;
         boolean success = false;
         try {
-            String extension = getImageExtension(context, uri);
+            String extension = getFileExtension(context, uri);
             inputStream = context.getContentResolver().openInputStream(uri);
-            file = File.createTempFile("image_picker", extension, context.getCacheDir());
+            file = File.createTempFile("native_drag_n_drop", extension, context.getCacheDir());
             file.deleteOnExit();
             outputStream = new FileOutputStream(file);
             if (inputStream != null) {
@@ -69,18 +69,17 @@ public class Utils {
     }
 
     /** @return extension of image with dot, or default .jpg if it none. */
-    private static String getImageExtension(Context context, Uri uriImage) {
+    private static String getFileExtension(Context context, Uri uriFile) {
         String extension = null;
 
         try {
-            String imagePath = uriImage.getPath();
-            if (uriImage.getScheme().equals(ContentResolver.SCHEME_CONTENT)) {
+            if (uriFile.getScheme().equals(ContentResolver.SCHEME_CONTENT)) {
                 final MimeTypeMap mime = MimeTypeMap.getSingleton();
-                extension = mime.getExtensionFromMimeType(context.getContentResolver().getType(uriImage));
+                extension = mime.getExtensionFromMimeType(context.getContentResolver().getType(uriFile));
             } else {
                 extension =
                         MimeTypeMap.getFileExtensionFromUrl(
-                                Uri.fromFile(new File(uriImage.getPath())).toString());
+                                Uri.fromFile(new File(uriFile.getPath())).toString());
             }
         } catch (Exception e) {
             extension = null;

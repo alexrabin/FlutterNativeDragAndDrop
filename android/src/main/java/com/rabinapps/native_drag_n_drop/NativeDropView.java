@@ -56,7 +56,7 @@ public class NativeDropView implements PlatformView {
             if (event.getClipDescription() != null) {
                 mimeType = event.getClipDescription().getMimeType(0);
             }
-
+            Log.w("[DART/NATIVE]","NativeDropView.newMimeType: " + mimeType);
             // Handles each of the expected events.
             switch (action) {
                 case DragEvent.ACTION_DRAG_STARTED:
@@ -64,7 +64,7 @@ public class NativeDropView implements PlatformView {
                         return false;
                     }
 
-                    if (isImage(mimeType) || isText(mimeType)) {
+                    if (isImage(mimeType) || isText(mimeType) || isPdf(mimeType) ||isVideo(mimeType) || isAudio(mimeType)) {
                         // Show in UI it can be accepted
                         return true;
                     }
@@ -76,17 +76,24 @@ public class NativeDropView implements PlatformView {
 
                 case DragEvent.ACTION_DROP:
                     sendLoadingNotification();
-                    if (isText(mimeType)) {
-                        handleTextDrop(event);
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                            view.setElevation(1);
-                        }
-                    } else if (isImage(mimeType)) {
-                        handleImageDrop(event);
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                            view.setElevation(1);
-                        }
-                    }
+//                    if (isText(mimeType)) {
+//                        handleTextDrop(event);
+//                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//                            view.setElevation(1);
+//                        }
+//                    } else if (isImage(mimeType)) {
+//                        handleImageDrop(event);
+//                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//                            view.setElevation(1);
+//                        }
+//                    }
+//                    else if (isPdf(mimeType)) {
+//                        handleImageDrop(event);
+//                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//                            view.setElevation(1);
+//                        }
+//                    }
+                    handleDroppedData(event);
                     // Show in UI drop is done
                     return true;
 
@@ -123,60 +130,99 @@ public class NativeDropView implements PlatformView {
         return mime.startsWith("text/");
     }
 
-    private void handleTextDrop(DragEvent event) {
-        ClipData.Item item = event.getClipData().getItemAt(0);
-        String dragData = item.getText().toString();
-        View vw = (View) event.getLocalState();
-
-        // Handle if drop from outside app, vw is null if drop from another app
-        if (vw == null) {
-            final ArrayList<Map<String, Object>> data = new ArrayList<>();
-            final Map<String, Object> textMap = new HashMap<>();
-            textMap.put("text", dragData);
-            data.add(textMap);
-            sendDropData(data);
-        }
+    private boolean isPdf(String mime) {
+        return mime.startsWith("application/pdf");
     }
 
-    private void handleImageDrop(DragEvent event) {
-        ClipData.Item item = event.getClipData().getItemAt(0);
+    private boolean isVideo(String mime) {
+        return mime.startsWith("video/");
+    }
+
+    private boolean isAudio(String mime) {
+        return mime.startsWith("audio/");
+    }
+
+
+    private void handleDroppedData(DragEvent event){
+        final ArrayList<Map<String, Object>> data = new ArrayList<>();
+
         View vw = (View) event.getLocalState();
-        // Handle if drop from outside app, vw is null if drop from another app
-        if (vw == null) {
-            Uri uri = item.getUri();
-            if (ContentResolver.SCHEME_CONTENT.equals(uri.getScheme())) {
-                // Accessing a "content" scheme Uri requires a permission grant.
-                DragAndDropPermissionsCompat dropPermissions;
-                dropPermissions = ActivityCompat
-                        .requestDragAndDropPermissions(activity, event);
-
-                if (dropPermissions == null) {
-                    // Permission could not be obtained.
-                    Log.w("[DART/NATIVE]", "NativeDropView.handleImageDrop: Permission could not be obtained to drop image");
-                    showToast("Permission could not be obtained to drop image");
-                    // Send empty list to end loading state
-                    sendDropData(new ArrayList<Map<String, Object>>());
-                    return;
-                }
-
-                final ArrayList<Map<String, Object>> data = new ArrayList<>();
-                final Map<String, Object> urlMap = new HashMap<>();
-                String path = getPathFromUri(activity, uri);
-                urlMap.put("image", path);
-                data.add(urlMap);
-                sendDropData(data);
-            } else {
-                // Other schemes (such as "android.resource") do not require a permission grant.
-                final ArrayList<Map<String, Object>> data = new ArrayList<>();
-                final Map<String, Object> urlMap = new HashMap<>();
-                urlMap.put("image", uri.getPath());
-                data.add(urlMap);
-                sendDropData(data);
+        if (vw != null){
+            sendDropData(data);
+            return;
+        }
+        ClipData clipData = event.getClipData();
+        int clipCount = event.getClipData().getItemCount();
+        for (int i = 0; i <clipCount; i++){
+            ClipData.Item item = clipData.getItemAt(i);
+            String mimeType = event.getClipDescription().getMimeType(i);
+            if (isText(mimeType)){
+                String dragData = item.getText().toString();
+                final Map<String, Object> textMap = new HashMap<>();
+                textMap.put("text", dragData);
+                data.add(textMap);
             }
+            else if (isImage(mimeType)){
+                Uri uri = item.getUri();
+                Map<String, Object> urlMap = handleFileDrop(event, uri, "image");
+                if (urlMap != null)
+                    data.add(urlMap);
+            }
+            else if (isVideo(mimeType)){
+                Uri uri = item.getUri();
+                Map<String, Object> urlMap = handleFileDrop(event, uri, "video");
+                if (urlMap != null)
+                    data.add(urlMap);
+            }
+            else if (isAudio(mimeType)){
+                Uri uri = item.getUri();
+                Map<String, Object> urlMap = handleFileDrop(event, uri, "audio");
+                if (urlMap != null)
+                    data.add(urlMap);
+            }
+            else if (isPdf(mimeType)){
+                Uri uri = item.getUri();
+                Map<String, Object> urlMap = handleFileDrop(event, uri, "pdf");
+                if (urlMap != null)
+                    data.add(urlMap);
+            }
+        }
+        sendDropData(data);
+
+    }
+
+    private Map<String, Object> handleFileDrop(DragEvent event, Uri uri, String dataType){
+        if (ContentResolver.SCHEME_CONTENT.equals(uri.getScheme())) {
+            // Accessing a "content" scheme Uri requires a permission grant.
+            DragAndDropPermissionsCompat dropPermissions;
+            dropPermissions = ActivityCompat
+                    .requestDragAndDropPermissions(activity, event);
+
+            if (dropPermissions == null) {
+                // Permission could not be obtained.
+                Log.w("[DART/NATIVE]", "NativeDropView.handleFileDrop: Permission could not be obtained to drop file");
+                showToast("Permission could not be obtained to drop file");
+                // Send empty list to end loading state
+//                final Map<String, Object> urlMap = new HashMap<>();
+//                urlMap.put(dataType, "Permission could not be obtained to drop file");
+                return null;
+            }
+
+            final Map<String, Object> urlMap = new HashMap<>();
+            String path = getPathFromUri(activity, uri);
+            urlMap.put(dataType, path);
+            return urlMap;
+        } else {
+            // Other schemes (such as "android.resource") do not require a permission grant.
+            final Map<String, Object> urlMap = new HashMap<>();
+            urlMap.put(dataType, uri.getPath());
+            return urlMap;
         }
     }
 
     public void sendDropData(@Nullable Object data){
+        Log.w("[DART/NATIVE]", "NativeDropView.sendDropData: Sending data");
+
         channel.invokeMethod("receivedDropData", data);
     }
 
