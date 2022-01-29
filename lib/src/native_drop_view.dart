@@ -88,7 +88,6 @@ class _NativeDropViewState extends State<NativeDropView> {
   Widget build(BuildContext context) {
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
-        // TODO: Switch handleAndroidVirtual() for better performance below Android 10, if it works with drag and drop
         return handleAndroidHybrid();
       case TargetPlatform.iOS:
         return handleIOS();
@@ -151,22 +150,25 @@ class _NativeDropViewState extends State<NativeDropView> {
   /// features might not work.
   ///
   /// Requires minSdkVersion 20
-  Stack handleAndroidVirtual() {
-    return Stack(
-      children: [
-        widget.child,
-        IgnorePointer(
-          child: AndroidView(
-            viewType: NativeDropView.viewType,
-            onPlatformViewCreated: _onPlatformViewCreated,
-            layoutDirection: TextDirection.ltr,
-            creationParams: _creationParams,
-            creationParamsCodec: NativeDropView._decoder,
-          ),
-        ),
-      ],
-    );
-  }
+  /// 
+  
+  // Commented out because it does not work with drag and drop
+  // Stack handleAndroidVirtual() {
+  //   return Stack(
+  //     children: [
+  //       widget.child,
+  //       IgnorePointer(
+  //         child: AndroidView(
+  //           viewType: NativeDropView.viewType,
+  //           onPlatformViewCreated: _onPlatformViewCreated,
+  //           layoutDirection: TextDirection.ltr,
+  //           creationParams: _creationParams,
+  //           creationParamsCodec: NativeDropView._decoder,
+  //         ),
+  //       ),
+  //     ],
+  //   );
+  // }
 
   Stack handleIOS() {
     return Stack(
