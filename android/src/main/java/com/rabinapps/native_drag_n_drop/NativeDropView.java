@@ -24,37 +24,21 @@ import java.util.Map;
 import io.flutter.Log;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
-import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.platform.PlatformView;
 
-public class NativeDropView implements PlatformView, MethodChannel.MethodCallHandler, ActivityAware {
+public class NativeDropView implements PlatformView, ActivityAware {
     @NonNull private final View dragView;
     @Nullable private Activity activity;
     @NonNull private final MethodChannel channel;
-
     @NonNull private final Context context;
 
     public NativeDropView(@NonNull Context context, int viewId, @NonNull Map<String, Object> creationParams, @NonNull MethodChannel channel) {
         // init data from flutter here
         this.context = context;
         this.dragView = new View(context);
-
-        this.channel = channel;
-
         dragView.setOnDragListener(viewDragListener());
-
-        this.channel.setMethodCallHandler((call, result) -> {
-            if ("updateParams".equals(call.method)) {
-
-                if (isMap(call.arguments)) {
-                    @SuppressWarnings("unchecked") final Map<String, Object> flutterArgs = (Map<String, Object>) call.arguments;
-
-                } else {
-                    Log.w("NativeDropView: updateParams method", "Could not load arguments. Arguments was not of type Map<String, Object>");
-                }
-            }
-        });
+        this.channel = channel;
     }
 
     // Some of the below code was taken from [Microsoft's Drag and Drop example](https://github.com/microsoft/surface-duo-sdk-samples/blob/main/DragAndDrop/src/main/java/com/microsoft/device/display/samples/draganddrop/fragment/DropTargetFragment.java)
@@ -229,16 +213,27 @@ public class NativeDropView implements PlatformView, MethodChannel.MethodCallHan
         }
     }
 
-    @Override
-    public void onMethodCall(@NonNull MethodCall call, @NonNull MethodChannel.Result result) {
-    }
-
     public void sendDropData(@Nullable Object data){
         channel.invokeMethod("receivedDropData", data);
     }
 
     public void sendLoadingNotification(){
         channel.invokeMethod("loadingData", "Loading your data");
+    }
+
+    @NonNull
+    private MethodChannel.MethodCallHandler channelMethodCallHandler() {
+        return (call, result) -> {
+            if ("updateParams".equals(call.method)) {
+
+                if (isMap(call.arguments)) {
+                    @SuppressWarnings("unchecked") final Map<String, Object> flutterArgs = (Map<String, Object>) call.arguments;
+
+                } else {
+                    Log.w("NativeDropView: updateParams method", "Could not load arguments. Arguments was not of type Map<String, Object>");
+                }
+            }
+        };
     }
 
     @NonNull
@@ -252,23 +247,36 @@ public class NativeDropView implements PlatformView, MethodChannel.MethodCallHan
 
     @Override
     public void onAttachedToActivity(@NonNull ActivityPluginBinding binding) {
+        Log.d("DART/NATIVE", "onAttachedToActivity");
         activity = binding.getActivity();
         dragView.setOnDragListener(viewDragListener());
+
+        // Channel method call handler must be set here, if it is set in the constructor onAttachedToActivity will never be called
+        // https://stackoverflow.com/questions/59887901/get-activity-reference-in-flutter-plugin/59912225#59912225
+        channel.setMethodCallHandler(channelMethodCallHandler());
     }
 
     @Override
     public void onDetachedFromActivityForConfigChanges() {
+        Log.d("DART/NATIVE", "onDetachedFromActivityForConfigChanges");
         activity = null;
+        channel.setMethodCallHandler(null);
+        dragView.setOnDragListener(null);
     }
 
     @Override
     public void onReattachedToActivityForConfigChanges(@NonNull ActivityPluginBinding binding) {
+        Log.d("DART/NATIVE", "onReattachedToActivityForConfigChanges");
         activity = binding.getActivity();
+        channel.setMethodCallHandler(channelMethodCallHandler());
+        dragView.setOnDragListener(viewDragListener());
     }
 
     @Override
     public void onDetachedFromActivity() {
+        Log.d("DART/NATIVE", "onDetachedFromActivity");
         dragView.setOnDragListener(null);
+        channel.setMethodCallHandler(null);
         activity = null;
     }
 }
