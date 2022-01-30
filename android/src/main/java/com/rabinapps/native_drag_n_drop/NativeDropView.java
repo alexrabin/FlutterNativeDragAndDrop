@@ -135,6 +135,7 @@ public class NativeDropView implements PlatformView {
         }
         ClipData clipData = event.getClipData();
         int clipCount = event.getClipData().getItemCount();
+
         for (int i = 0; i <clipCount; i++){
             ClipData.Item item = clipData.getItemAt(i);
             String mimeType = event.getClipDescription().getMimeType(i);
@@ -148,6 +149,7 @@ public class NativeDropView implements PlatformView {
                     data.add(urlMap);
             }
             else if (isImage(mimeType)){
+                Log.w("[DART/NATIVE]", "NativeDropView.handleDroppedData: Is Image "+ mimeType);
                 Uri uri = item.getUri();
                 Map<String, Object> urlMap = handleFileDrop(event, uri, "image");
                 if (urlMap != null)
@@ -160,6 +162,7 @@ public class NativeDropView implements PlatformView {
                     data.add(urlMap);
             }
             else if (isAudio(mimeType)){
+                Log.w("[DART/NATIVE]", "NativeDropView.handleDroppedData: Is audio "+ mimeType);
                 Uri uri = item.getUri();
                 Map<String, Object> urlMap = handleFileDrop(event, uri, "audio");
                 if (urlMap != null)
@@ -184,6 +187,9 @@ public class NativeDropView implements PlatformView {
                 data.add(textMap);
             }
 
+        }
+        for (Map<String, Object> object: data){
+            Log.w("[DART/NATIVE]", "NativeDropView.dataToSend:"+ object.toString()+"\n\n");
         }
         sendDropData(data);
 
@@ -258,10 +264,10 @@ public class NativeDropView implements PlatformView {
         if (allowedTotal instanceof Integer){
             this.allowedTotal = (Integer) allowedTotal;
         }
+        this.allowedTypeIdentifiers = new ArrayList<>();
         Object dropDataTypes = flutterArgs.get("allowedDropDataTypes");
         if (dropDataTypes instanceof List){
             this.allowedDropDataTypes = (ArrayList<String>) dropDataTypes;
-            this.allowedTypeIdentifiers = new ArrayList<>();
             for (String dataType: this.allowedDropDataTypes){
                 switch (dataType) {
                     case "text":
@@ -288,7 +294,6 @@ public class NativeDropView implements PlatformView {
         Object dropFileExts = flutterArgs.get("allowedDropFileExtensions");
         if (dropFileExts instanceof List){
             this.allowedDropFileExtensions = (ArrayList<String>) dropFileExts;
-            this.allowedTypeIdentifiers = new ArrayList<>();
             for(String extension: this.allowedDropFileExtensions){
                 String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension.toLowerCase());
                 if (mimeType != null) {
@@ -300,6 +305,7 @@ public class NativeDropView implements PlatformView {
         if (receiveNonAllowedItems instanceof Boolean){
             this.receiveNonAllowedItems = (Boolean) receiveNonAllowedItems;
         }
+        Log.w("[DART/NATIVE]", "NativeDropView.updatedParams\n\n Allowed type ids:" + this.allowedTypeIdentifiers.size());
     }
     private Boolean shouldAllowAllFiles(){
         return this.allowedDropDataTypes.contains("file");
