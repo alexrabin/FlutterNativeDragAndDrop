@@ -43,160 +43,164 @@ class _HomeViewState extends State<HomeView> {
             await showModalBottomSheet(
                 context: context,
                 builder: (context) {
-                  return StatefulBuilder(builder: (context, setState) {
-                    _setState = setState;
-                    return Column(
-                      children: [
-                        const SizedBox(
-                          height: 12.0,
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            Container(
-                              width: 30,
-                              height: 5,
-                              decoration: BoxDecoration(
-                                  color: Theme.of(context).brightness ==
-                                          Brightness.light
-                                      ? Colors.grey[300]
-                                      : Colors.grey[600],
-                                  borderRadius: const BorderRadius.all(
-                                      Radius.circular(12.0))),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(
-                          height: 18.0,
-                        ),
-                        SizedBox(
-                          height: MediaQuery.of(context).size.height * 0.5,
-                          child: ListView(
-                            children: [
-                              const Padding(
-                                padding: EdgeInsets.all(8.0),
-                                child: Center(
-                                  child: Text(
-                                      'Allowed items to be dropped at a time:'),
-                                ),
+                  return SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.5,
+                    child: StatefulBuilder(builder: (context, setState) {
+                      _setState = setState;
+                      return Column(
+                        children: [
+                          const SizedBox(
+                            height: 12.0,
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              Container(
+                                width: 30,
+                                height: 5,
+                                decoration: BoxDecoration(
+                                    color: Theme.of(context).brightness ==
+                                            Brightness.light
+                                        ? Colors.grey[300]
+                                        : Colors.grey[600],
+                                    borderRadius: const BorderRadius.all(
+                                        Radius.circular(12.0))),
                               ),
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Center(
-                                  child: Text(allowedItemsAtOnce != 0
-                                      ? "${allowedItemsAtOnce.toInt()} items allowed"
-                                      : "No limit"),
-                                ),
-                              ),
-                              Slider(
-                                value: allowedItemsAtOnce,
-                                max: 20,
-                                divisions: 20,
-                                min: 0,
-                                label: allowedItemsAtOnce.round().toString(),
-                                onChanged: (value) {
-                                  _setState(() {
-                                    allowedItemsAtOnce = value;
-                                  });
-                                },
-                              ),
-                              const Divider(),
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: CheckboxListTile(
-                                    title: const Text(
-                                        "Receive non-allowed items if at least one item is allowed"),
-                                    value: _receiveNonAllowedItems,
-                                    subtitle: Row(
-                                      children: [
-                                        TextButton.icon(
-                                            onPressed: () {
-                                              showDialog(
-                                                  context: context,
-                                                  builder: (context) {
-                                                    return AlertDialog(
-                                                      content: const Text(
-                                                          "It is recommended to keep this enabled, and instead give feedback to the user when they have dropped an item that is not allowed."),
-                                                      actions: [
-                                                        TextButton(
-                                                            onPressed: () {
-                                                              Navigator.of(
-                                                                      context)
-                                                                  .pop();
-                                                            },
-                                                            child: const Text(
-                                                                "Awesome!"))
-                                                      ],
-                                                    );
-                                                  });
-                                            },
-                                            icon: const Icon(Icons.info),
-                                            label: const Text(
-                                                "Why would I want this?")),
-                                        const Spacer()
-                                      ],
-                                    ),
-                                    onChanged: (bool? value) {
-                                      _setState(() {
-                                        _receiveNonAllowedItems = value!;
-                                      });
-                                    }),
-                              ),
-                              const Divider(),
-                              const Center(child: Text('Allowed data types:')),
-                              ...dataTypes.keys.map((key) {
-                                return CheckboxListTile(
-                                    title: Text(key.toString()),
-                                    value: dataTypes[key],
-                                    onChanged: (bool? value) {
-                                      _setState(() {
-                                        dataTypes[key] = value!;
-                                      });
-                                    });
-                              }).toList(),
-                              const Divider(),
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Center(
-                                    child: Row(
-                                  children: [
-                                    const Text('Allowed file extensions:'),
-                                    const Spacer(),
-                                    ElevatedButton(
-                                        onPressed: () {
-                                          _displayTextInputDialog(context);
-                                        },
-                                        child: const Text("Add extension")),
-                                  ],
-                                )),
-                              ),
-                              ...allowedFileExtensions.mapIndexed((ext, index) {
-                                return Column(
-                                  children: [
-                                    ListTile(
-                                      title: Text(
-                                        ext,
-                                      ),
-                                      trailing: IconButton(
-                                        icon: const Icon(Icons.close),
-                                        onPressed: () {
-                                          _setState(() {
-                                            allowedFileExtensions
-                                                .removeAt(index);
-                                          });
-                                        },
-                                      ),
-                                    ),
-                                    const Divider()
-                                  ],
-                                );
-                              }).toList(),
                             ],
                           ),
-                        ),
-                      ],
-                    );
-                  });
+                          const SizedBox(
+                            height: 18.0,
+                          ),
+                          Expanded(
+                            child: ListView(
+                              children: [
+                                const Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Center(
+                                    child: Text(
+                                        'Allowed items to be dropped at a time:'),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Center(
+                                    child: Text(allowedItemsAtOnce != 0
+                                        ? "${allowedItemsAtOnce.toInt()} items allowed"
+                                        : "No limit"),
+                                  ),
+                                ),
+                                Slider(
+                                  value: allowedItemsAtOnce,
+                                  max: 20,
+                                  divisions: 20,
+                                  min: 0,
+                                  label: allowedItemsAtOnce.round().toString(),
+                                  onChanged: (value) {
+                                    _setState(() {
+                                      allowedItemsAtOnce = value;
+                                    });
+                                  },
+                                ),
+                                const Divider(),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: CheckboxListTile(
+                                      title: const Text(
+                                          "Receive non-allowed items if at least one item is allowed"),
+                                      value: _receiveNonAllowedItems,
+                                      subtitle: Row(
+                                        children: [
+                                          TextButton.icon(
+                                              onPressed: () {
+                                                showDialog(
+                                                    context: context,
+                                                    builder: (context) {
+                                                      return AlertDialog(
+                                                        content: const Text(
+                                                            "It is recommended to keep this enabled, and instead give feedback to the user when they have dropped an item that is not allowed."),
+                                                        actions: [
+                                                          TextButton(
+                                                              onPressed: () {
+                                                                Navigator.of(
+                                                                        context)
+                                                                    .pop();
+                                                              },
+                                                              child: const Text(
+                                                                  "Awesome!"))
+                                                        ],
+                                                      );
+                                                    });
+                                              },
+                                              icon: const Icon(Icons.info),
+                                              label: const Text(
+                                                  "Why would I want this?")),
+                                          const Spacer()
+                                        ],
+                                      ),
+                                      onChanged: (bool? value) {
+                                        _setState(() {
+                                          _receiveNonAllowedItems = value!;
+                                        });
+                                      }),
+                                ),
+                                const Divider(),
+                                const Center(
+                                    child: Text('Allowed data types:')),
+                                ...dataTypes.keys.map((key) {
+                                  return CheckboxListTile(
+                                      title: Text(key.toString()),
+                                      value: dataTypes[key],
+                                      onChanged: (bool? value) {
+                                        _setState(() {
+                                          dataTypes[key] = value!;
+                                        });
+                                      });
+                                }).toList(),
+                                const Divider(),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Center(
+                                      child: Row(
+                                    children: [
+                                      const Text('Allowed file extensions:'),
+                                      const Spacer(),
+                                      ElevatedButton(
+                                          onPressed: () {
+                                            _displayTextInputDialog(context);
+                                          },
+                                          child: const Text("Add extension")),
+                                    ],
+                                  )),
+                                ),
+                                ...allowedFileExtensions
+                                    .mapIndexed((ext, index) {
+                                  return Column(
+                                    children: [
+                                      ListTile(
+                                        title: Text(
+                                          ext,
+                                        ),
+                                        trailing: IconButton(
+                                          icon: const Icon(Icons.close),
+                                          onPressed: () {
+                                            _setState(() {
+                                              allowedFileExtensions
+                                                  .removeAt(index);
+                                            });
+                                          },
+                                        ),
+                                      ),
+                                      const Divider()
+                                    ],
+                                  );
+                                }).toList(),
+                              ],
+                            ),
+                          ),
+                        ],
+                      );
+                    }),
+                  );
                 });
             if (_dropViewController != null) {
               _dropViewController!.refreshDropViewParams(

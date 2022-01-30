@@ -8,9 +8,9 @@ import android.content.ClipData;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.net.Uri;
-import android.os.Build;
 import android.view.DragEvent;
 import android.view.View;
+import android.webkit.MimeTypeMap;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -19,7 +19,9 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.view.DragAndDropPermissionsCompat;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import io.flutter.Log;
@@ -31,6 +33,11 @@ public class NativeDropView implements PlatformView {
     @NonNull private final Activity activity;
     @NonNull private final MethodChannel channel;
     @NonNull private final Context context;
+    private ArrayList<String> allowedDropDataTypes;
+    private ArrayList<String> allowedDropFileExtensions;
+    private ArrayList<String> allowedTypeIdentifiers;
+    private int allowedTotal = 0;
+    private Boolean receiveNonAllowedItems = true;
 
     public NativeDropView(@NonNull Context context,
                           int viewId,
@@ -43,6 +50,8 @@ public class NativeDropView implements PlatformView {
         dragView.setOnDragListener(viewDragListener());
         this.channel = channel;
         this.activity = activity;
+        updateAllowedTotalExtsData(creationParams);
+
         channel.setMethodCallHandler(channelMethodCallHandler());
     }
 
@@ -51,25 +60,15 @@ public class NativeDropView implements PlatformView {
     private View.OnDragListener viewDragListener() {
         return (view, event) -> {
             int action = event.getAction();
-            String mimeType = "";
-
-            if (event.getClipDescription() != null) {
-                mimeType = event.getClipDescription().getMimeType(0);
-            }
-            Log.w("[DART/NATIVE]","NativeDropView.newMimeType: " + mimeType);
             // Handles each of the expected events.
+
             switch (action) {
                 case DragEvent.ACTION_DRAG_STARTED:
-                    if (mimeType == null || "".equals(mimeType)) {
+                    if (this.allowedTotal != 0 && this.allowedTotal < event.getClipDescription().getMimeTypeCount()){
                         return false;
                     }
 
-                    if (isImage(mimeType) || isText(mimeType) || isPdf(mimeType) ||isVideo(mimeType) || isAudio(mimeType) || isUri(mimeType)) {
-                        // Show in UI it can be accepted
-                        return true;
-                    }
-
-                    return false;
+                    return hasItemsConformingToAllowedTypeIdentifiers(event) || shouldAllowAllFiles() ;
 
                 case DragEvent.ACTION_DRAG_ENTERED:
                     return true;
@@ -139,7 +138,16 @@ public class NativeDropView implements PlatformView {
         for (int i = 0; i <clipCount; i++){
             ClipData.Item item = clipData.getItemAt(i);
             String mimeType = event.getClipDescription().getMimeType(i);
-            if (isImage(mimeType)){
+            if(!this.receiveNonAllowedItems && !this.isAllowed(mimeType)){
+                continue;
+            }
+            if (this.allowedDropDataTypes.contains("file") && !isText(mimeType) && !isUri(mimeType)){
+                Uri uri = item.getUri();
+                Map<String, Object> urlMap = handleFileDrop(event, uri, "file");
+                if (urlMap != null)
+                    data.add(urlMap);
+            }
+            else if (isImage(mimeType)){
                 Uri uri = item.getUri();
                 Map<String, Object> urlMap = handleFileDrop(event, uri, "image");
                 if (urlMap != null)
@@ -226,8 +234,9 @@ public class NativeDropView implements PlatformView {
             if ("updateParams".equals(call.method)) {
 
                 if (isMap(call.arguments)) {
-                    @SuppressWarnings("unchecked") final Map<String, Object> flutterArgs = (Map<String, Object>) call.arguments;
+                    Map<String, Object> flutterArgs = (Map<String, Object>) call.arguments;
 
+                    updateAllowedTotalExtsData(flutterArgs);
                 } else {
                     Log.w("[DART/NATIVE]", "NativeDropView.channelMethodCallHandler's updateParams: Could not load arguments. Arguments was not of type Map<String, Object>");
                 }
@@ -235,6 +244,70 @@ public class NativeDropView implements PlatformView {
         };
     }
 
+    private void updateAllowedTotalExtsData(Map<String, Object> flutterArgs){
+        Object allowedTotal = flutterArgs.get("allowedTotal");
+        if (allowedTotal instanceof Integer){
+            this.allowedTotal = (Integer) allowedTotal;
+        }
+        Object dropDataTypes = flutterArgs.get("allowedDropDataTypes");
+        if (dropDataTypes instanceof List){
+            this.allowedDropDataTypes = (ArrayList<String>) dropDataTypes;
+            this.allowedTypeIdentifiers = new ArrayList<>();
+            for (String dataType: this.allowedDropDataTypes){
+                switch (dataType) {
+                    case "text":
+                        this.allowedTypeIdentifiers.add("text/plain");
+                        break;
+                    case "url":
+                        this.allowedTypeIdentifiers.add("text/uri");
+                        break;
+                    case "image":
+                        this.allowedTypeIdentifiers.addAll(Arrays.asList("image/jpeg", "image/gif", "image/png"));
+                        break;
+                    case "video":
+                        this.allowedTypeIdentifiers.addAll(Arrays.asList("video/mpeg", "video/mp4"));
+                        break;
+                    case "audio":
+                        this.allowedTypeIdentifiers.addAll(Arrays.asList("audio/mpeg", "audio/mp4", "audio/x-wav", "audio/aac"));
+                        break;
+                    case "pdf":
+                        this.allowedTypeIdentifiers.add("application/pdf");
+                        break;
+                }
+            }
+        }
+        Object dropFileExts = flutterArgs.get("allowedDropFileExtensions");
+        if (dropFileExts instanceof List){
+            this.allowedDropFileExtensions = (ArrayList<String>) dropFileExts;
+            this.allowedTypeIdentifiers = new ArrayList<>();
+            for(String extension: this.allowedDropFileExtensions){
+                String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension.toLowerCase());
+                if (mimeType != null) {
+                    this.allowedTypeIdentifiers.add(mimeType);
+                }
+            }
+        }
+        Object receiveNonAllowedItems = flutterArgs.get("receiveNonAllowedItems");
+        if (receiveNonAllowedItems instanceof Boolean){
+            this.receiveNonAllowedItems = (Boolean) receiveNonAllowedItems;
+        }
+        Log.w("[DART/NATIVE]", "NativeDropView updateAllowedTotalExtsData called");
+    }
+    private Boolean shouldAllowAllFiles(){
+        return this.allowedDropDataTypes.contains("file");
+    }
+    private Boolean hasItemsConformingToAllowedTypeIdentifiers(DragEvent event){
+        for (int i = 0; i< event.getClipDescription().getMimeTypeCount(); i++){
+            String mimeType =  event.getClipDescription().getMimeType(i);
+            if (this.allowedTypeIdentifiers.contains(mimeType)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    private  Boolean isAllowed(String mimeType){
+        return this.allowedTypeIdentifiers.contains(mimeType) || shouldAllowAllFiles();
+    }
     @NonNull
     @Override
     public View getView() {
