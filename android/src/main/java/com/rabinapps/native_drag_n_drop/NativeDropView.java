@@ -213,7 +213,8 @@ public class NativeDropView implements PlatformView {
         } else {
             // Other schemes (such as "android.resource") do not require a permission grant.
             final Map<String, Object> urlMap = new HashMap<>();
-            urlMap.put(dataType, uri.getPath());
+            String path = getPathFromUri(activity, uri);
+            urlMap.put(dataType, path);
             return urlMap;
         }
     }
