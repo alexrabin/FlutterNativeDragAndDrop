@@ -64,7 +64,7 @@ public class NativeDropView implements PlatformView {
                         return false;
                     }
 
-                    if (isImage(mimeType) || isText(mimeType) || isPdf(mimeType) ||isVideo(mimeType) || isAudio(mimeType)) {
+                    if (isImage(mimeType) || isText(mimeType) || isPdf(mimeType) ||isVideo(mimeType) || isAudio(mimeType) || isUri(mimeType)) {
                         // Show in UI it can be accepted
                         return true;
                     }
@@ -76,23 +76,6 @@ public class NativeDropView implements PlatformView {
 
                 case DragEvent.ACTION_DROP:
                     sendLoadingNotification();
-//                    if (isText(mimeType)) {
-//                        handleTextDrop(event);
-//                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-//                            view.setElevation(1);
-//                        }
-//                    } else if (isImage(mimeType)) {
-//                        handleImageDrop(event);
-//                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-//                            view.setElevation(1);
-//                        }
-//                    }
-//                    else if (isPdf(mimeType)) {
-//                        handleImageDrop(event);
-//                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-//                            view.setElevation(1);
-//                        }
-//                    }
                     handleDroppedData(event);
                     // Show in UI drop is done
                     return true;
@@ -141,7 +124,7 @@ public class NativeDropView implements PlatformView {
     private boolean isAudio(String mime) {
         return mime.startsWith("audio/");
     }
-
+    private boolean isUri(String mime){return mime.startsWith("text/uri");}
 
     private void handleDroppedData(DragEvent event){
         final ArrayList<Map<String, Object>> data = new ArrayList<>();
@@ -156,13 +139,7 @@ public class NativeDropView implements PlatformView {
         for (int i = 0; i <clipCount; i++){
             ClipData.Item item = clipData.getItemAt(i);
             String mimeType = event.getClipDescription().getMimeType(i);
-            if (isText(mimeType)){
-                String dragData = item.getText().toString();
-                final Map<String, Object> textMap = new HashMap<>();
-                textMap.put("text", dragData);
-                data.add(textMap);
-            }
-            else if (isImage(mimeType)){
+            if (isImage(mimeType)){
                 Uri uri = item.getUri();
                 Map<String, Object> urlMap = handleFileDrop(event, uri, "image");
                 if (urlMap != null)
@@ -186,6 +163,19 @@ public class NativeDropView implements PlatformView {
                 if (urlMap != null)
                     data.add(urlMap);
             }
+            else if (isUri(mimeType)){
+                String dragData = item.getUri().toString();
+                final Map<String, Object> textMap = new HashMap<>();
+                textMap.put("url", dragData);
+                data.add(textMap);
+            }
+            else if (isText(mimeType)){
+                String dragData = item.getText().toString();
+                final Map<String, Object> textMap = new HashMap<>();
+                textMap.put("text", dragData);
+                data.add(textMap);
+            }
+
         }
         sendDropData(data);
 
