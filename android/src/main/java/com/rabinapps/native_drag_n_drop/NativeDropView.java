@@ -50,7 +50,7 @@ public class NativeDropView implements PlatformView {
         dragView.setOnDragListener(viewDragListener());
         this.channel = channel;
         this.activity = activity;
-        updateAllowedTotalExtsData(creationParams);
+        updateAllowedData(creationParams);
 
         channel.setMethodCallHandler(channelMethodCallHandler());
     }
@@ -235,17 +235,25 @@ public class NativeDropView implements PlatformView {
             if ("updateParams".equals(call.method)) {
 
                 if (isMap(call.arguments)) {
+                    @SuppressWarnings("unchecked")
                     Map<String, Object> flutterArgs = (Map<String, Object>) call.arguments;
 
-                    updateAllowedTotalExtsData(flutterArgs);
+                    updateAllowedData(flutterArgs);
+                    result.success(true);
                 } else {
                     Log.w("[DART/NATIVE]", "NativeDropView.channelMethodCallHandler's updateParams: Could not load arguments. Arguments was not of type Map<String, Object>");
+                    result.error("INVALID_TYPE", "Argument was an incorrect type. It should be a List of Map of String, Object.", null);
                 }
+            } else {
+                result.notImplemented();
             }
+
+
         };
     }
 
-    private void updateAllowedTotalExtsData(Map<String, Object> flutterArgs){
+    private void updateAllowedData(Map<String, Object> flutterArgs){
+        Log.d("[DART/NATIVE]", "NativeDropView updateAllowedData called");
         Object allowedTotal = flutterArgs.get("allowedTotal");
         if (allowedTotal instanceof Integer){
             this.allowedTotal = (Integer) allowedTotal;
@@ -292,7 +300,6 @@ public class NativeDropView implements PlatformView {
         if (receiveNonAllowedItems instanceof Boolean){
             this.receiveNonAllowedItems = (Boolean) receiveNonAllowedItems;
         }
-        Log.w("[DART/NATIVE]", "NativeDropView updateAllowedTotalExtsData called");
     }
     private Boolean shouldAllowAllFiles(){
         return this.allowedDropDataTypes.contains("file");
