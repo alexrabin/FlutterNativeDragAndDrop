@@ -148,7 +148,7 @@ public class NativeDropView implements PlatformView {
             if(!this.receiveNonAllowedItems && !this.isAllowed(mimeType)){
                 continue;
             }
-            if (this.allowedDropDataTypes.contains("file") && !isText(mimeType) && !isUri(mimeType)){
+            if (this.allowedDropDataTypes.contains("file") && item.getText() == null){
                 Uri uri = item.getUri();
                 @Nullable Map<String, Object> urlMap = handleFileDrop(event, uri, "file");
                 if (urlMap != null)
