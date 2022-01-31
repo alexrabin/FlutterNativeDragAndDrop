@@ -408,6 +408,7 @@ class _ListNativeDropViewState extends State<ListNativeDropView> {
                             child: Text("Drop data here"),
                           ),
                     loading: (loading) {
+                      print("Loading");
                       setState(() {
                         loadingData = loading;
                       });
