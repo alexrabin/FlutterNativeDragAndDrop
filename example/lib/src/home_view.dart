@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:native_drag_n_drop/native_drag_n_drop.dart';
@@ -81,26 +82,37 @@ class _HomeViewState extends State<HomeView> {
                                         'Allowed items to be dropped at a time:'),
                                   ),
                                 ),
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Center(
-                                    child: Text(allowedItemsAtOnce != 0
-                                        ? "${allowedItemsAtOnce.toInt()} items allowed"
-                                        : "No limit"),
+                                if (Platform.isAndroid)
+                                  const Padding(
+                                    padding: EdgeInsets.all(8.0),
+                                    child: Center(
+                                      child: Text(
+                                          "Cannot change allowed limit on android"),
+                                    ),
                                   ),
-                                ),
-                                Slider(
-                                  value: allowedItemsAtOnce,
-                                  max: 20,
-                                  divisions: 20,
-                                  min: 0,
-                                  label: allowedItemsAtOnce.round().toString(),
-                                  onChanged: (value) {
-                                    _setState(() {
-                                      allowedItemsAtOnce = value;
-                                    });
-                                  },
-                                ),
+                                if (Platform.isIOS)
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Center(
+                                      child: Text(allowedItemsAtOnce != 0
+                                          ? "${allowedItemsAtOnce.toInt()} items allowed"
+                                          : "No limit"),
+                                    ),
+                                  ),
+                                if (Platform.isIOS)
+                                  Slider(
+                                    value: allowedItemsAtOnce,
+                                    max: 20,
+                                    divisions: 20,
+                                    min: 0,
+                                    label:
+                                        allowedItemsAtOnce.round().toString(),
+                                    onChanged: (value) {
+                                      _setState(() {
+                                        allowedItemsAtOnce = value;
+                                      });
+                                    },
+                                  ),
                                 const Divider(),
                                 Padding(
                                   padding: const EdgeInsets.all(8.0),

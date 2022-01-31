@@ -192,7 +192,7 @@ public class NativeDropView implements PlatformView {
                 textMap.put("text", dragData);
                 data.add(textMap);
             }
-            Log.w("[DART/NATIVE]", "NativeDropView.dataToSend: finished executing on iteration " + i);
+
         }
 
         for (Map<String, Object> map: data){
@@ -308,7 +308,6 @@ public class NativeDropView implements PlatformView {
         if (receiveNonAllowedItems instanceof Boolean){
             this.receiveNonAllowedItems = (Boolean) receiveNonAllowedItems;
         }
-        Log.w("[DART/NATIVE]", "NativeDropView.updatedParams\n\n Allowed type ids:" + this.allowedTypeIdentifiers.size());
     }
     private Boolean shouldAllowAllFiles(){
         return this.allowedDropDataTypes.contains("file");
