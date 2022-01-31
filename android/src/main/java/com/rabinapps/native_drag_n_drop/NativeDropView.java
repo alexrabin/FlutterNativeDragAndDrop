@@ -65,7 +65,7 @@ public class NativeDropView implements PlatformView {
 
             switch (action) {
                 case DragEvent.ACTION_DRAG_STARTED:
-                    if (this.allowedTotal != 0 && this.allowedTotal < event.getClipDescription().getMimeTypeCount()){
+                    if (this.allowedTotal != 0 && this.allowedTotal < event.getClipData().getItemCount()){
                         return false;
                     }
 
@@ -154,7 +154,7 @@ public class NativeDropView implements PlatformView {
             }
             if (this.allowedDropDataTypes.contains("file") && !isText(mimeType) && !isUri(mimeType)){
                 Uri uri = item.getUri();
-                Map<String, Object> urlMap = handleFileDrop(event, uri, "file");
+                @Nullable Map<String, Object> urlMap = handleFileDrop(event, uri, "file");
                 if (urlMap != null)
                     data.add(urlMap);
             }
