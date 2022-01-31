@@ -69,7 +69,7 @@ public class Utils {
     }
 
     /** @return extension of image with dot, or default .jpg if it none. */
-    private static String getFileExtension(Context context, Uri uriFile) {
+    static String getFileExtension(Context context, Uri uriFile) {
         String extension = null;
 
         try {

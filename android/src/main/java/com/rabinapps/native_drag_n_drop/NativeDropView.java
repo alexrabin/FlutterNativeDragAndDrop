@@ -2,6 +2,7 @@ package com.rabinapps.native_drag_n_drop;
 
 import static com.rabinapps.native_drag_n_drop.Utils.isMap;
 import static com.rabinapps.native_drag_n_drop.Utils.getPathFromUri;
+import static com.rabinapps.native_drag_n_drop.Utils.getFileExtension;
 
 import android.app.Activity;
 import android.content.ClipData;
@@ -134,11 +135,20 @@ public class NativeDropView implements PlatformView {
             return;
         }
         ClipData clipData = event.getClipData();
-        int clipCount = event.getClipData().getItemCount();
+        int clipCount = clipData.getItemCount();
 
         for (int i = 0; i <clipCount; i++){
+
             ClipData.Item item = clipData.getItemAt(i);
-            String mimeType = event.getClipDescription().getMimeType(i);
+            String mimeType = "text/plain";
+            if (item.getUri() != null){
+
+                String extension = getFileExtension(activity, item.getUri()).substring(1);
+                mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension.toLowerCase());
+                if (mimeType == null){
+                    mimeType = "text/plain";
+                }
+            }
             if(!this.receiveNonAllowedItems && !this.isAllowed(mimeType)){
                 continue;
             }
@@ -149,11 +159,11 @@ public class NativeDropView implements PlatformView {
                     data.add(urlMap);
             }
             else if (isImage(mimeType)){
-                Log.w("[DART/NATIVE]", "NativeDropView.handleDroppedData: Is Image "+ mimeType);
                 Uri uri = item.getUri();
                 Map<String, Object> urlMap = handleFileDrop(event, uri, "image");
-                if (urlMap != null)
+                if (urlMap != null) {
                     data.add(urlMap);
+                }
             }
             else if (isVideo(mimeType)){
                 Uri uri = item.getUri();
@@ -162,11 +172,12 @@ public class NativeDropView implements PlatformView {
                     data.add(urlMap);
             }
             else if (isAudio(mimeType)){
-                Log.w("[DART/NATIVE]", "NativeDropView.handleDroppedData: Is audio "+ mimeType);
+
                 Uri uri = item.getUri();
                 Map<String, Object> urlMap = handleFileDrop(event, uri, "audio");
-                if (urlMap != null)
+                if (urlMap != null) {
                     data.add(urlMap);
+                }
             }
             else if (isPdf(mimeType)){
                 Uri uri = item.getUri();
@@ -174,22 +185,23 @@ public class NativeDropView implements PlatformView {
                 if (urlMap != null)
                     data.add(urlMap);
             }
-            else if (isUri(mimeType)){
+            else if (item.getUri() != null){
                 String dragData = item.getUri().toString();
                 final Map<String, Object> textMap = new HashMap<>();
                 textMap.put("url", dragData);
                 data.add(textMap);
             }
-            else if (isText(mimeType)){
+            else if (item.getText() != null){
                 String dragData = item.getText().toString();
                 final Map<String, Object> textMap = new HashMap<>();
                 textMap.put("text", dragData);
                 data.add(textMap);
             }
-
+            Log.w("[DART/NATIVE]", "NativeDropView.dataToSend: finished executing on iteration " + i);
         }
-        for (Map<String, Object> object: data){
-            Log.w("[DART/NATIVE]", "NativeDropView.dataToSend:"+ object.toString()+"\n\n");
+
+        for (Map<String, Object> map: data){
+            Log.w("[DART/NATIVE]", "NativeDropView.dataToSend:"+ map.toString()+"\n\n");
         }
         sendDropData(data);
 
