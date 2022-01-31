@@ -37,7 +37,6 @@ public class NativeDropView implements PlatformView {
     private ArrayList<String> allowedDropDataTypes;
     private ArrayList<String> allowedDropFileExtensions;
     private ArrayList<String> allowedTypeIdentifiers;
-    private int allowedTotal = 0;
     private Boolean receiveNonAllowedItems = true;
 
     public NativeDropView(@NonNull Context context,
@@ -62,12 +61,8 @@ public class NativeDropView implements PlatformView {
         return (view, event) -> {
             int action = event.getAction();
             // Handles each of the expected events.
-
             switch (action) {
                 case DragEvent.ACTION_DRAG_STARTED:
-                    if (this.allowedTotal != 0 && this.allowedTotal < event.getClipData().getItemCount()){
-                        return false;
-                    }
 
                     return hasItemsConformingToAllowedTypeIdentifiers(event) || shouldAllowAllFiles() ;
 
@@ -272,10 +267,6 @@ public class NativeDropView implements PlatformView {
 
     private void updateAllowedData(Map<String, Object> flutterArgs){
         Log.d("[DART/NATIVE]", "NativeDropView updateAllowedData called");
-        Object allowedTotal = flutterArgs.get("allowedTotal");
-        if (allowedTotal instanceof Integer){
-            this.allowedTotal = (Integer) allowedTotal;
-        }
         this.allowedTypeIdentifiers = new ArrayList<>();
         Object dropDataTypes = flutterArgs.get("allowedDropDataTypes");
         if (dropDataTypes instanceof List){
