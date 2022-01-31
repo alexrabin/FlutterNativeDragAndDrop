@@ -33,6 +33,8 @@ class NativeDropView extends StatefulWidget {
   /// number of items allowed to be dropped at a time
   ///
   /// When [allowedTotal] is 0 there is no limit
+  /// 
+  /// *Only supported on iOS due to limitations in Android.*
   final int allowedTotal;
 
   /// Restrict the types of data that can be dropped.
