@@ -144,14 +144,14 @@ public class NativeDropView implements PlatformView {
             }
             if (this.allowedDropDataTypes.contains("file") && !isText(mimeType) && !isUri(mimeType)){
                 Uri uri = item.getUri();
-                Map<String, Object> urlMap = handleFileDrop(event, uri, "file");
+                @Nullable Map<String, Object> urlMap = handleFileDrop(event, uri, "file");
                 if (urlMap != null)
                     data.add(urlMap);
             }
             else if (isImage(mimeType)){
                 Log.w("[DART/NATIVE]", "NativeDropView.handleDroppedData: Is Image "+ mimeType);
                 Uri uri = item.getUri();
-                Map<String, Object> urlMap = handleFileDrop(event, uri, "image");
+                @Nullable Map<String, Object> urlMap = handleFileDrop(event, uri, "image");
                 if (urlMap != null)
                     data.add(urlMap);
             }
