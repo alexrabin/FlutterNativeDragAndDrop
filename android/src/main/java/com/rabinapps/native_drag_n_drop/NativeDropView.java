@@ -9,6 +9,7 @@ import android.content.ClipData;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.net.Uri;
+import android.util.Patterns;
 import android.view.DragEvent;
 import android.view.View;
 import android.webkit.MimeTypeMap;
@@ -180,8 +181,8 @@ public class NativeDropView implements PlatformView {
                 if (urlMap != null)
                     data.add(urlMap);
             }
-            else if (item.getUri() != null){
-                String dragData = item.getUri().toString();
+            else if (Patterns.WEB_URL.matcher(item.getText()).matches()){
+                String dragData = item.getText().toString();
                 final Map<String, Object> textMap = new HashMap<>();
                 textMap.put("url", dragData);
                 data.add(textMap);
