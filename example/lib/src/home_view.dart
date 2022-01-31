@@ -87,7 +87,7 @@ class _HomeViewState extends State<HomeView> {
                                     padding: EdgeInsets.all(8.0),
                                     child: Center(
                                       child: Text(
-                                          "Cannot change allowed limit on android"),
+                                          "Cannot change allowed limit on Android"),
                                     ),
                                   ),
                                 if (Platform.isIOS)

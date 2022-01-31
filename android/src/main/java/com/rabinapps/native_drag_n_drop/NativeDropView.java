@@ -195,10 +195,6 @@ public class NativeDropView implements PlatformView {
             }
 
         }
-
-        for (Map<String, Object> map: data){
-            Log.w("[DART/NATIVE]", "NativeDropView.dataToSend:"+ map.toString()+"\n\n");
-        }
         sendDropData(data);
 
     }
@@ -234,7 +230,6 @@ public class NativeDropView implements PlatformView {
     }
 
     public void sendDropData(@Nullable Object data){
-        Log.w("[DART/NATIVE]", "NativeDropView.sendDropData: Sending data");
 
         channel.invokeMethod("receivedDropData", data);
     }
@@ -267,7 +262,6 @@ public class NativeDropView implements PlatformView {
     }
 
     private void updateAllowedData(Map<String, Object> flutterArgs){
-        Log.d("[DART/NATIVE]", "NativeDropView updateAllowedData called");
         this.allowedTypeIdentifiers = new ArrayList<>();
         Object dropDataTypes = flutterArgs.get("allowedDropDataTypes");
         if (dropDataTypes instanceof List){
