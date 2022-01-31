@@ -122,6 +122,32 @@ public class NativeDropView implements PlatformView {
     }
     private boolean isUri(String mime){return mime.startsWith("text/uri");}
 
+    private boolean shouldAllowAudio(){
+        return this.allowedDropDataTypes.contains("audio");
+    }
+    private boolean shouldAllowImages(){
+        return this.allowedDropDataTypes.contains("image");
+    }
+    private boolean shouldAllowVideos(){
+        return this.allowedDropDataTypes.contains("video");
+    }
+    private boolean shouldAllowPdfs(){
+        return this.allowedDropDataTypes.contains("pdf");
+    }
+    private boolean shouldAllowFiles(){
+        return this.allowedDropDataTypes.contains("file");
+    }
+    private boolean shouldAllowText(){
+        return this.allowedDropDataTypes.contains("text");
+    }
+    private boolean shouldAllowUrl(){
+        return this.allowedDropDataTypes.contains("url");
+    }
+    private boolean isFileAllowed(Uri uri){
+        String extension = getFileExtension(activity, uri).substring(1);
+        return this.allowedDropFileExtensions.contains(extension);
+    }
+
     private void handleDroppedData(DragEvent event){
         final ArrayList<Map<String, Object>> data = new ArrayList<>();
 
@@ -149,26 +175,20 @@ public class NativeDropView implements PlatformView {
                 if(!receiveNonAllowedItems && !isAllowed(mimeType)){
                     continue;
                 }
-                if (allowedDropDataTypes.contains("file") && item.getText() == null){
-                    Uri uri = item.getUri();
-                    @Nullable Map<String, Object> urlMap = handleFileDrop(event, uri, "file");
-                    if (urlMap != null)
-                        data.add(urlMap);
-                }
-                else if (isImage(mimeType)){
+                 if (isImage(mimeType) && shouldAllowImages()){
                     Uri uri = item.getUri();
                     Map<String, Object> urlMap = handleFileDrop(event, uri, "image");
                     if (urlMap != null) {
                         data.add(urlMap);
                     }
                 }
-                else if (isVideo(mimeType)){
+                else if (isVideo(mimeType) && shouldAllowVideos()){
                     Uri uri = item.getUri();
                     Map<String, Object> urlMap = handleFileDrop(event, uri, "video");
                     if (urlMap != null)
                         data.add(urlMap);
                 }
-                else if (isAudio(mimeType)){
+                else if (isAudio(mimeType) && shouldAllowAudio()){
 
                     Uri uri = item.getUri();
                     Map<String, Object> urlMap = handleFileDrop(event, uri, "audio");
@@ -176,19 +196,25 @@ public class NativeDropView implements PlatformView {
                         data.add(urlMap);
                     }
                 }
-                else if (isPdf(mimeType)){
+                else if (isPdf(mimeType) && shouldAllowPdfs()){
                     Uri uri = item.getUri();
                     Map<String, Object> urlMap = handleFileDrop(event, uri, "pdf");
                     if (urlMap != null)
                         data.add(urlMap);
                 }
-                else if (Patterns.WEB_URL.matcher(item.getText()).matches()){
+               else if (shouldAllowFiles() || ( item.getUri() != null && isFileAllowed(item.getUri()))) {
+                     Uri uri = item.getUri();
+                     @Nullable Map<String, Object> urlMap = handleFileDrop(event, uri, "file");
+                     if (urlMap != null)
+                         data.add(urlMap);
+                 }
+                else if (shouldAllowText() && item.getText() != null && Patterns.WEB_URL.matcher(item.getText()).matches()){
                     String dragData = item.getText().toString();
                     final Map<String, Object> textMap = new HashMap<>();
                     textMap.put("url", dragData);
                     data.add(textMap);
                 }
-                else if (item.getText() != null){
+                else if (shouldAllowUrl() && item.getText() != null){
                     String dragData = item.getText().toString();
                     final Map<String, Object> textMap = new HashMap<>();
                     textMap.put("text", dragData);
