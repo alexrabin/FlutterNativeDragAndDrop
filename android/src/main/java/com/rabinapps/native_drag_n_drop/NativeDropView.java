@@ -208,13 +208,13 @@ public class NativeDropView implements PlatformView {
                      if (urlMap != null)
                          data.add(urlMap);
                  }
-                else if (shouldAllowText() && item.getText() != null && Patterns.WEB_URL.matcher(item.getText()).matches()){
+                else if (shouldAllowUrl() && item.getText() != null && Patterns.WEB_URL.matcher(item.getText()).matches()){
                     String dragData = item.getText().toString();
                     final Map<String, Object> textMap = new HashMap<>();
                     textMap.put("url", dragData);
                     data.add(textMap);
                 }
-                else if (shouldAllowUrl() && item.getText() != null){
+                else if (shouldAllowText() && item.getText() != null){
                     String dragData = item.getText().toString();
                     final Map<String, Object> textMap = new HashMap<>();
                     textMap.put("text", dragData);
