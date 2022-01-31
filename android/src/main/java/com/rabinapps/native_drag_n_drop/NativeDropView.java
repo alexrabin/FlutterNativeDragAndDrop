@@ -64,7 +64,7 @@ public class NativeDropView implements PlatformView {
 
             switch (action) {
                 case DragEvent.ACTION_DRAG_STARTED:
-                    if (this.allowedTotal != 0 && this.allowedTotal < event.getClipDescription().getMimeTypeCount()){
+                    if (this.allowedTotal != 0 && this.allowedTotal < event.getClipData().getItemCount()){
                         return false;
                     }
 
