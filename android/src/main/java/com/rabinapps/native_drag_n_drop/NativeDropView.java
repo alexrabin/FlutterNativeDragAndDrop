@@ -133,69 +133,73 @@ public class NativeDropView implements PlatformView {
         ClipData clipData = event.getClipData();
         int clipCount = clipData.getItemCount();
 
-        for (int i = 0; i <clipCount; i++){
+        new Thread(() -> {
+            for (int i = 0; i <clipCount; i++){
 
-            ClipData.Item item = clipData.getItemAt(i);
-            String mimeType = "text/plain";
-            if (item.getUri() != null){
+                ClipData.Item item = clipData.getItemAt(i);
+                String mimeType = "text/plain";
+                if (item.getUri() != null){
 
-                String extension = getFileExtension(activity, item.getUri()).substring(1);
-                mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension.toLowerCase());
-                if (mimeType == null){
-                    mimeType = "text/plain";
+                    String extension = getFileExtension(activity, item.getUri()).substring(1);
+                    mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension.toLowerCase());
+                    if (mimeType == null){
+                        mimeType = "text/plain";
+                    }
                 }
-            }
-            if(!this.receiveNonAllowedItems && !this.isAllowed(mimeType)){
-                continue;
-            }
-            if (this.allowedDropDataTypes.contains("file") && item.getText() == null){
-                Uri uri = item.getUri();
-                @Nullable Map<String, Object> urlMap = handleFileDrop(event, uri, "file");
-                if (urlMap != null)
-                    data.add(urlMap);
-            }
-            else if (isImage(mimeType)){
-                Uri uri = item.getUri();
-                Map<String, Object> urlMap = handleFileDrop(event, uri, "image");
-                if (urlMap != null) {
-                    data.add(urlMap);
+                if(!receiveNonAllowedItems && !isAllowed(mimeType)){
+                    continue;
                 }
-            }
-            else if (isVideo(mimeType)){
-                Uri uri = item.getUri();
-                Map<String, Object> urlMap = handleFileDrop(event, uri, "video");
-                if (urlMap != null)
-                    data.add(urlMap);
-            }
-            else if (isAudio(mimeType)){
-
-                Uri uri = item.getUri();
-                Map<String, Object> urlMap = handleFileDrop(event, uri, "audio");
-                if (urlMap != null) {
-                    data.add(urlMap);
+                if (allowedDropDataTypes.contains("file") && item.getText() == null){
+                    Uri uri = item.getUri();
+                    @Nullable Map<String, Object> urlMap = handleFileDrop(event, uri, "file");
+                    if (urlMap != null)
+                        data.add(urlMap);
                 }
-            }
-            else if (isPdf(mimeType)){
-                Uri uri = item.getUri();
-                Map<String, Object> urlMap = handleFileDrop(event, uri, "pdf");
-                if (urlMap != null)
-                    data.add(urlMap);
-            }
-            else if (Patterns.WEB_URL.matcher(item.getText()).matches()){
-                String dragData = item.getText().toString();
-                final Map<String, Object> textMap = new HashMap<>();
-                textMap.put("url", dragData);
-                data.add(textMap);
-            }
-            else if (item.getText() != null){
-                String dragData = item.getText().toString();
-                final Map<String, Object> textMap = new HashMap<>();
-                textMap.put("text", dragData);
-                data.add(textMap);
-            }
+                else if (isImage(mimeType)){
+                    Uri uri = item.getUri();
+                    Map<String, Object> urlMap = handleFileDrop(event, uri, "image");
+                    if (urlMap != null) {
+                        data.add(urlMap);
+                    }
+                }
+                else if (isVideo(mimeType)){
+                    Uri uri = item.getUri();
+                    Map<String, Object> urlMap = handleFileDrop(event, uri, "video");
+                    if (urlMap != null)
+                        data.add(urlMap);
+                }
+                else if (isAudio(mimeType)){
 
-        }
-        sendDropData(data);
+                    Uri uri = item.getUri();
+                    Map<String, Object> urlMap = handleFileDrop(event, uri, "audio");
+                    if (urlMap != null) {
+                        data.add(urlMap);
+                    }
+                }
+                else if (isPdf(mimeType)){
+                    Uri uri = item.getUri();
+                    Map<String, Object> urlMap = handleFileDrop(event, uri, "pdf");
+                    if (urlMap != null)
+                        data.add(urlMap);
+                }
+                else if (Patterns.WEB_URL.matcher(item.getText()).matches()){
+                    String dragData = item.getText().toString();
+                    final Map<String, Object> textMap = new HashMap<>();
+                    textMap.put("url", dragData);
+                    data.add(textMap);
+                }
+                else if (item.getText() != null){
+                    String dragData = item.getText().toString();
+                    final Map<String, Object> textMap = new HashMap<>();
+                    textMap.put("text", dragData);
+                    data.add(textMap);
+                }
+
+            }
+            activity.runOnUiThread(() -> sendDropData(data));
+
+        }).start();
+
 
     }
 
