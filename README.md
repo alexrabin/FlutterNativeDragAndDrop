@@ -43,7 +43,7 @@ List<DropData> receivedData = [];
 @override
 Widget build(BuildContext context) {
     return NativeDropView(
-    allowedTotal: 5,
+    allowedTotal: 5, //Allowed total only works on iOS (Android has limitations)
     allowedDropDataTypes: const [DropDataType.text, DropDataType.image, DropDataType.video],
     allowedDropFileExtensions: ['apk', 'dart'],
     receiveNonAllowedItems: false,
@@ -99,21 +99,5 @@ All files are saved to the temp directory on the device so if you want to save t
 
 - [x] specify the number of items allowed to be dropped at a time
 - [x] Only allow certain data types
-- [ ] Android Support
+- [x] Android Support
 - [ ] Drag support (Dragging data within app to a source outside of flutter app)
-
-## Contributing
-
-Please make a pr and show an example if possible.
-
-<details>
-  <summary>These are some resources that may help you when it comes to adding drag and drop support: </summary>
-    
-- [Flutter Platform Views](https://docs.flutter.dev/development/platform-integration/platform-views?tab=android-platform-views-java-tab)
-- [An example of how to use flutter platform views](https://github.com/ryan-alfi/flutter-platform-view)
-- [iOS Drag and Drop Docs](https://developer.apple.com/documentation/uikit/drag_and_drop)
-- [iOS make a uiview a drop desitination](https://developer.apple.com/documentation/uikit/drag_and_drop/making_a_view_into_a_drop_destination)
-- [iOS make a uiview into a drag source](https://developer.apple.com/documentation/uikit/drag_and_drop/making_a_view_into_a_drag_source)
-
-
-</details>
