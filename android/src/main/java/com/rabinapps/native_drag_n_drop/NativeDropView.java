@@ -255,7 +255,6 @@ public class NativeDropView implements PlatformView {
             if (dropPermissions == null) {
                 // Permission could not be obtained.
                 Log.w("[DART/NATIVE]", "NativeDropView.handleFileDrop: Permission could not be obtained to drop file");
-                showToast("Permission could not be obtained to drop file");
                 // Send empty list to end loading state
 //                final Map<String, Object> urlMap = new HashMap<>();
 //                urlMap.put(dataType, "Permission could not be obtained to drop file");
