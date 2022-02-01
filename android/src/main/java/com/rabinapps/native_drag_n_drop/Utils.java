@@ -41,7 +41,6 @@ public class Utils {
     }
 
     //https://github.com/flutter/plugins/blob/main/packages/image_picker/image_picker/android/src/main/java/io/flutter/plugins/imagepicker/FileUtils.java
-    @RequiresApi(api = Build.VERSION_CODES.O)
     static String getPathFromUri(final Context context, final Uri uri) {
         File file = null;
         InputStream inputStream = null;
@@ -76,21 +75,26 @@ public class Utils {
     }
 
     /** @return extension of image with dot, or default .jpg if it none. */
-    @RequiresApi(api = Build.VERSION_CODES.O)
     static String getFileExtension(Context context, Uri uriFile) {
         String extension = null;
         Cursor cursor = null;
         try {
             if (uriFile.getScheme().equals(ContentResolver.SCHEME_CONTENT)) {
-                cursor = context.getContentResolver().query(uriFile, new String[]{OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE}, null, null);
-                int nameIndex = cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME);
-                int sizeIndex = cursor.getColumnIndexOrThrow(OpenableColumns.SIZE);
-                final boolean movedToFirst = cursor.moveToFirst();
-                final int count = cursor.getCount();
-                final String name = cursor.getString(nameIndex);
-                final String size = Long.toString(cursor.getLong(sizeIndex));
-                final int index = name.lastIndexOf('.') + 1;
-                extension = name.substring(index);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    cursor = context.getContentResolver().query(uriFile, new String[]{OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE}, null, null);
+                    int nameIndex = cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME);
+                    int sizeIndex = cursor.getColumnIndexOrThrow(OpenableColumns.SIZE);
+                    final boolean movedToFirst = cursor.moveToFirst();
+                    final int count = cursor.getCount();
+                    final String name = cursor.getString(nameIndex);
+                    final String size = Long.toString(cursor.getLong(sizeIndex));
+                    final int index = name.lastIndexOf('.') + 1;
+                    extension = name.substring(index);
+                } else {
+                    // This may not work for all files
+                    final MimeTypeMap mime = MimeTypeMap.getSingleton();
+                    extension = mime.getExtensionFromMimeType(context.getContentResolver().getType(uriFile));
+                }
 
             } else {
                 extension =
