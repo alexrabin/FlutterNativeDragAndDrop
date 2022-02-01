@@ -143,6 +143,10 @@ public class NativeDropView implements PlatformView {
     private boolean shouldAllowUrl(){
         return this.allowedDropDataTypes.contains("url");
     }
+    private boolean isFileAllowed(Uri uri){
+        String extension = getFileExtension(activity, uri).substring(1);
+        return this.allowedDropFileExtensions.contains(extension);
+    }
 
     private void handleDroppedData(DragEvent event){
         final ArrayList<Map<String, Object>> data = new ArrayList<>();
@@ -161,7 +165,7 @@ public class NativeDropView implements PlatformView {
                 ClipData.Item item = clipData.getItemAt(i);
                 String mimeType = "text/plain";
 
-                if (ContentResolver.SCHEME_CONTENT.equals(item.getUri().getScheme())) {
+                if (item.getUri() != null && ContentResolver.SCHEME_CONTENT.equals(item.getUri().getScheme())) {
                     // Accessing a "content" scheme Uri requires a permission grant.
                     DragAndDropPermissionsCompat dropPermissions;
                     dropPermissions = ActivityCompat
@@ -205,7 +209,7 @@ public class NativeDropView implements PlatformView {
                     if (urlMap != null)
                         data.add(urlMap);
                 }
-               else if (shouldAllowFiles()) {
+               else if (shouldAllowFiles() || ( item.getUri() != null && isFileAllowed(item.getUri()))) {
                      Uri uri = item.getUri();
                      if (uri != null) {
                          @Nullable Map<String, Object> urlMap = handleFileDrop(event, uri, "file");
