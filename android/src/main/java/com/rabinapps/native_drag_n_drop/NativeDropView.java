@@ -202,11 +202,27 @@ public class NativeDropView implements PlatformView {
                     if (urlMap != null)
                         data.add(urlMap);
                 }
-               else if (shouldAllowFiles() || ( item.getUri() != null && isFileAllowed(item.getUri()))) {
+               else if (shouldAllowFiles()) {
                      Uri uri = item.getUri();
-                     @Nullable Map<String, Object> urlMap = handleFileDrop(event, uri, "file");
-                     if (urlMap != null)
-                         data.add(urlMap);
+                     if (uri != null) {
+                         @Nullable Map<String, Object> urlMap = handleFileDrop(event, uri, "file");
+
+                         if (urlMap != null)
+                             data.add(urlMap);
+                     }
+                     else if (item.getText() != null){
+                         String dragData = item.getText().toString();
+                         final Map<String, Object> textMap = new HashMap<>();
+
+                         if (Patterns.WEB_URL.matcher(item.getText()).matches()){
+                             textMap.put("url", dragData);
+                         }
+                         else {
+                             textMap.put("text", dragData);
+                         }
+                         data.add(textMap);
+
+                     }
                  }
                 else if (shouldAllowUrl() && item.getText() != null && Patterns.WEB_URL.matcher(item.getText()).matches()){
                     String dragData = item.getText().toString();
