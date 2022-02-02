@@ -353,7 +353,6 @@ class _ListNativeDropViewState extends State<ListNativeDropView> {
                     child: receivedData.isNotEmpty
                         ? ListView.builder(
                             physics: const NeverScrollableScrollPhysics(),
-                            shrinkWrap: true,
                             itemCount: receivedData.length,
                             itemBuilder: (context, index) {
                               return Dismissible(
