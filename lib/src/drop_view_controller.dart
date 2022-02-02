@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:native_drag_n_drop/src/drop_data.dart';
 
@@ -113,7 +114,7 @@ class DropViewController {
       params['receiveNonAllowedItems'] = receiveNonAllowedItems;
     }
     if (params.isNotEmpty) {
-      print("updated");
+      debugPrint("[native_drag_n_drop]: Native component parameters updated");
       await _channel.invokeMethod("updateParams", params);
     }
   }
