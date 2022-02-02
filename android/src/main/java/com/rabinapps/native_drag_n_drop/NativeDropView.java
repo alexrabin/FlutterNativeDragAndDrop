@@ -164,10 +164,10 @@ public class NativeDropView implements PlatformView {
 
                 ClipData.Item item = clipData.getItemAt(i);
                 String mimeType = "text/plain";
-
+                DragAndDropPermissionsCompat dropPermissions = null;
                 if (item.getUri() != null && ContentResolver.SCHEME_CONTENT.equals(item.getUri().getScheme())) {
                     // Accessing a "content" scheme Uri requires a permission grant.
-                    DragAndDropPermissionsCompat dropPermissions;
+
                     dropPermissions = ActivityCompat
                             .requestDragAndDropPermissions(activity, event);
                 }
@@ -243,7 +243,9 @@ public class NativeDropView implements PlatformView {
                     textMap.put("text", dragData);
                     data.add(textMap);
                 }
-
+                if (dropPermissions != null){
+                    dropPermissions.release();
+                }
             }
             activity.runOnUiThread(() -> sendDropData(data));
 
