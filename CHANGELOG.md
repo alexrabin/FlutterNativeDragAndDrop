@@ -1,5 +1,5 @@
 ## 0.0.4
-* Android Support! Requires Android 7.0 or higher
+* Android Support! Requires Android 8.0 or higher
 ## 0.0.3+4
 * Fixed an issue where images would register as the text or url data type instead of the image data type
 * Fixed an issue where text and urls would regsiter as the file data type when `DropDataType.file` was only specified

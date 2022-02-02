@@ -28,7 +28,7 @@ A package that allows you to add native drag and drop support into your flutter 
 <img src="https://user-images.githubusercontent.com/15949910/151897557-0e1d9ecf-487c-437c-b301-b8c955ab2efa.gif" width="500"/>
 
 ## Currently supported features
-* Support iPadOS 11, iOS 15, and Android 7.0 and above
+* Support iPadOS 11, iOS 15, and Android 8.0 and above
 * Only has drop support (can drag data from outside of the app and drop into your flutter application)
 * Supports text, urls, images, videos, audio, pdfs, and custom file extensions
 * Can drop multiple items at once
