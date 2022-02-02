@@ -320,9 +320,16 @@ class ListNativeDropView extends StatefulWidget {
 class _ListNativeDropViewState extends State<ListNativeDropView> {
   bool loadingData = false;
   List<DropData> receivedData = [];
+  ScrollController controller = ScrollController();
   @override
   void initState() {
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
   }
 
   @override
@@ -352,7 +359,7 @@ class _ListNativeDropViewState extends State<ListNativeDropView> {
                     created: widget.created,
                     child: receivedData.isNotEmpty
                         ? ListView.builder(
-                            physics: const NeverScrollableScrollPhysics(),
+                            controller: controller,
                             itemCount: receivedData.length,
                             itemBuilder: (context, index) {
                               return Dismissible(
