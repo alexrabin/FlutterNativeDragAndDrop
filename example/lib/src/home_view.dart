@@ -229,20 +229,16 @@ class _HomeViewState extends State<HomeView> {
       ),
       body: SafeArea(
         child: Center(
-          child: ListView(
-            children: [
-              ListNativeDropView(
-                allowedItemsAtOnce: allowedItemsAtOnce.toInt(),
-                allowedDataTypes: dataTypes.keys
-                    .where((element) => dataTypes[element] == true)
-                    .toList(),
-                allowedFileExtensions: allowedFileExtensions,
-                receiveNonAllowedItems: _receiveNonAllowedItems,
-                created: (DropViewController controller) {
-                  _dropViewController = controller;
-                },
-              ),
-            ],
+          child: ListNativeDropView(
+            allowedItemsAtOnce: allowedItemsAtOnce.toInt(),
+            allowedDataTypes: dataTypes.keys
+                .where((element) => dataTypes[element] == true)
+                .toList(),
+            allowedFileExtensions: allowedFileExtensions,
+            receiveNonAllowedItems: _receiveNonAllowedItems,
+            created: (DropViewController controller) {
+              _dropViewController = controller;
+            },
           ),
         ),
       ),
@@ -334,107 +330,101 @@ class _ListNativeDropViewState extends State<ListNativeDropView> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          receivedData.isNotEmpty
-              ? TextButton(
-                  onPressed: () {
-                    setState(() {
-                      receivedData.clear();
-                    });
-                  },
-                  child: const Text("Clear Data"))
-              : Container(),
-          Stack(
-            children: [
-              SizedBox(
-                height: MediaQuery.of(context).size.height * 0.8,
-                child: NativeDropView(
-                    allowedTotal: widget.allowedItemsAtOnce,
-                    allowedDropDataTypes: widget.allowedDataTypes,
-                    allowedDropFileExtensions: widget.allowedFileExtensions,
-                    receiveNonAllowedItems: widget.receiveNonAllowedItems,
-                    created: widget.created,
-                    child: receivedData.isNotEmpty
-                        ? ListView.builder(
-                            controller: controller,
-                            itemCount: receivedData.length,
-                            itemBuilder: (context, index) {
-                              return Dismissible(
-                                  direction: DismissDirection.endToStart,
-                                  onDismissed: (d) {
-                                    receivedData.removeAt(index);
-                                    setState(() {});
-                                  },
-                                  background: Container(
-                                    color: Colors.red,
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: const [
-                                        Spacer(),
-                                        Icon(
-                                          Icons.delete,
-                                          color: Colors.white,
-                                          size: 30,
-                                        ),
-                                        SizedBox(
-                                          width: 10,
-                                        )
-                                      ],
-                                    ),
+    return Column(
+      children: [
+        loadingData
+            ? const Center(
+                child: CircularProgressIndicator(),
+              )
+            : Container(),
+        receivedData.isNotEmpty
+            ? TextButton(
+                onPressed: () {
+                  setState(() {
+                    receivedData.clear();
+                  });
+                },
+                child: const Text("Clear Data"))
+            : Container(),
+        Expanded(
+          child: NativeDropView(
+              allowedTotal: widget.allowedItemsAtOnce,
+              allowedDropDataTypes: widget.allowedDataTypes,
+              allowedDropFileExtensions: widget.allowedFileExtensions,
+              receiveNonAllowedItems: widget.receiveNonAllowedItems,
+              created: widget.created,
+              child: receivedData.isNotEmpty
+                  ? Scrollbar(
+                      controller: controller,
+                      child: ListView.builder(
+                          controller: controller,
+                          itemCount: receivedData.length,
+                          itemBuilder: (context, index) {
+                            return Dismissible(
+                                direction: DismissDirection.endToStart,
+                                onDismissed: (d) {
+                                  receivedData.removeAt(index);
+                                  setState(() {});
+                                },
+                                background: Container(
+                                  color: Colors.red,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: const [
+                                      Spacer(),
+                                      Icon(
+                                        Icons.delete,
+                                        color: Colors.white,
+                                        size: 30,
+                                      ),
+                                      SizedBox(
+                                        width: 10,
+                                      )
+                                    ],
                                   ),
-                                  key: Key(Random().nextInt(10000).toString()),
-                                  child: Builder(
-                                    builder: (context) {
-                                      var data = receivedData[index];
-                                      if (data.type == DropDataType.text ||
-                                          data.type == DropDataType.url) {
-                                        return ListTile(
-                                          title: Text(data.dropText!),
-                                          subtitle: Text(data.type.toString()),
-                                        );
-                                      }
-                                      if (data.type == DropDataType.image) {
-                                        return DroppedImageListTile(
-                                          dropData: data,
-                                        );
-                                      }
-
+                                ),
+                                key: Key(Random().nextInt(10000).toString()),
+                                child: Builder(
+                                  builder: (context) {
+                                    var data = receivedData[index];
+                                    if (data.type == DropDataType.text ||
+                                        data.type == DropDataType.url) {
                                       return ListTile(
-                                        title: Text(data.dropFile!.path),
+                                        title: Text(data.dropText!),
                                         subtitle: Text(data.type.toString()),
                                       );
-                                    },
-                                  ));
-                            })
-                        : const Center(
-                            child: Text("Drop data here"),
-                          ),
-                    loading: (loading) {
-                      debugPrint("[native_drag_n_drop]: " +
-                          (loading ? "Loading..." : "No longer loading."));
-                      setState(() {
-                        loadingData = loading;
-                      });
-                    },
-                    dataReceived: (data) {
-                      setState(() {
-                        receivedData.addAll(data);
-                      });
-                    }),
-              ),
-              loadingData
-                  ? const Center(
-                      child: CircularProgressIndicator(),
+                                    }
+                                    if (data.type == DropDataType.image) {
+                                      return DroppedImageListTile(
+                                        dropData: data,
+                                      );
+                                    }
+
+                                    return ListTile(
+                                      title: Text(data.dropFile!.path),
+                                      subtitle: Text(data.type.toString()),
+                                    );
+                                  },
+                                ));
+                          }),
                     )
-                  : Container()
-            ],
-          ),
-        ],
-      ),
+                  : const Center(
+                      child: Text("Drop data here"),
+                    ),
+              loading: (loading) {
+                debugPrint("[native_drag_n_drop]: " +
+                    (loading ? "Loading..." : "No longer loading."));
+                setState(() {
+                  loadingData = loading;
+                });
+              },
+              dataReceived: (data) {
+                setState(() {
+                  receivedData.addAll(data);
+                });
+              }),
+        ),
+      ],
     );
   }
 }
