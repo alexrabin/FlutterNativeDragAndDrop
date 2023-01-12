@@ -381,7 +381,7 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
                 group.enter()
                 item.itemProvider.loadFileRepresentation(forTypeIdentifier: item.itemProvider.registeredTypeIdentifiers[0]) { url, err in
                     if (err == nil && url != nil) {
-                        if let imageURL = self.saveImageURL(userImageURL: url!) {
+                        if let imageURL = self.saveFileURL(userURL: url!) {
                             data.append(["image": imageURL])
                         }
                     }
@@ -577,28 +577,6 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
             }
         }
         return false
-    }
-    
-    func saveImageURL(userImageURL: URL) -> String? {
-        let filename : NSString = NSString(string: userImageURL.lastPathComponent)
-        let ext = userImageURL.pathExtension.lowercased();
-        let fileManager = FileManager()
-        
-        if let image = UIImage(contentsOfFile: userImageURL.path) {
-            let data = image.jpegData(compressionQuality: 1)
-            let fileName = NSString(string: filename.lastPathComponent).deletingPathExtension + UUID().uuidString
-            let tempFile = NSTemporaryDirectory().appending(fileName.appending(".\(ext)"))
-            if fileManager.fileExists(atPath: tempFile){
-                guard ((try? fileManager.removeItem(atPath: tempFile)) != nil) else {
-                    return nil
-                }
-            }
-            if fileManager.createFile(atPath: tempFile, contents: data, attributes: nil){
-                return tempFile
-            }
-        }
-       
-        return nil
     }
     
     func saveImage(imageData : Data) -> String? {

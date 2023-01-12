@@ -1,3 +1,6 @@
+## 0.0.5
+* Fixed images from always being jpeg data on iOS. Uses original format.
+
 ## 0.0.4
 * Android Support! Requires Android 8.0 or higher
 ## 0.0.3+4
