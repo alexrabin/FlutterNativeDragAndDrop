@@ -581,7 +581,8 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
     
     func saveImage(imageData : Data) -> String? {
         let fileManager = FileManager()
-        let tempFile = NSTemporaryDirectory().appending(UUID().uuidString.appending(".jpeg"))
+        let ext = getImageDataExtension(for: imageData)
+        let tempFile = NSTemporaryDirectory().appending(UUID().uuidString.appending(ext))
 
         if fileManager.fileExists(atPath: tempFile){
             guard ((try? fileManager.removeItem(atPath: tempFile)) != nil) else {
@@ -626,5 +627,23 @@ public class DropPlatformView: NSObject, FlutterPlatformView, UIDropInteractionD
             }
         }
     }
+    
+    func getImageDataExtension(for data: Data) -> String {
+
+        var b: UInt8 = 0
+        data.copyBytes(to: &b, count: 1)
+
+        switch b {
+        case 0xFF:
+            return ".jpeg"
+        case 0x89:
+            return ".png"
+        case 0x47:
+            return ".gif"
+        default:
+            return ".jpeg"
+        }
+    }
+    
 }
 
